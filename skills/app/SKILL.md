@@ -18,7 +18,7 @@ description: Develop or review ARK CREW SDK Apps, DTS configuration, FreeRTOS ta
 - DTS 分 `/sys` 和 `/software`：前者声明控制器/组件，后者保存任务周期、优先级和产品策略。
 - 入口保持强定义 `appStartTask(void *argument)`。启动顺序为读取软件配置、注册组件、按 init level 初始化、自检、创建业务任务，再删除启动任务。
 - 业务算法、显示页面、动画和状态机放在 App；可复用器件能力放在 component；硬件归一化操作放在 HAL。
-- 生成文件只由 `ark_dts.py` 更新。CubeMX 生成目录保持只读。
+- 生成文件只由 `Rust DTS 生成工具` 更新。CubeMX 生成目录保持只读。
 
 ## 任务与运行时
 
@@ -27,10 +27,10 @@ description: Develop or review ARK CREW SDK Apps, DTS configuration, FreeRTOS ta
 ## 验证
 
 ```powershell
-python -m studio.cli dts app/<name> --check
-python -m studio.cli dts app/<name>
-python -m studio.cli configure app/<name>/<name>.dts --dry-run
-python -m pytest studio/tests -q
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
+cargo test --manifest-path ../ark_stdio_rust/tools/sdk/Cargo.toml
 ```
 
 修改 maintained App 行为时，补充或更新对应 App 测试/需求记录，并检查 `ARK_DTS_HAS_*` 条件编译和禁用节点没有意外启用。

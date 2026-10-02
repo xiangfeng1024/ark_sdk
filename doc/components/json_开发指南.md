@@ -23,8 +23,8 @@ json {
 配置完成后执行 DTS 校验和生成：
 
 ```powershell
-python -m studio.cli dts app/<app> --check
-python -m studio.cli dts app/<app>
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
 ```
 
 ## 3. API 参考

@@ -30,7 +30,7 @@ App / component
 - `hal/common/hal_catalog.json` 是唯一构建元数据。每个 `hal/<platform>/src/*.c` 及 `hal/src/*.c` 必须且只能归属一个 driver；新增源文件时同步 catalog 的 `sources`、宏和平台信息。
 - 当前平台为 `stm32f1`，根 compatible 为 `stm32f103c8` 或 `gd32f103c8`，工程前缀均为 `c8t6`。
 - CubeMX 生成的 `Core`、`Drivers`、`Middlewares`、MSP 初始化、DMA 配置、NVIC 和 IRQ 文件只由 CubeMX 管理。不得手改以“修复”HAL；应修改 `.ioc` 后重新生成。
-- `ark_dts_generated.c/.h` 由 `python -m studio.cli dts app/<name>` 生成，禁止手工编辑。生成文件中的 `ark_hal_*_handles[]`、`ark_hal_pwm_channels[]`、`ark_hal_watchdog_handle`、`ark_hal_usb_device_handle` 和 `ark_hal_soft_i2c_configs[]` 是适配器唯一绑定来源。
+- `ark_dts_generated.c/.h` 由 `../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
 - HAL 只做标准化硬件操作；设备协议、单位换算、校准、业务状态机放在组件或 App。
 
 ## 驱动清单（STM32F1）
@@ -60,9 +60,9 @@ App / component
 4. 修改 UART/I2C/SPI/PWM 映射时，先改 DTS 与 `.ioc`，再运行：
 
 ```powershell
-python -m studio.cli dts app/<name> --check
-python -m studio.cli dts app/<name>
-python -m studio.cli configure app/<name>/<name>.dts
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 5. 检查生成的 `ark_hal_bindings.h`、绑定表和裁剪宏；确认 `hal_catalog.json` 的源码闭包、managed defines 与 Keil 同步一致。
@@ -84,7 +84,7 @@ python -m studio.cli configure app/<name>/<name>.dts
 - [ ] DTS provider、资源 ID、PWM 通道和 CubeMX `.ioc` 一一对应；disabled provider 未被引用。
 - [ ] DMA/IRQ 优先级满足 FreeRTOS 约束；ISR 无打印、分配、阻塞和复杂解析。
 - [ ] I2C 地址、GPIO active level、ADC 原始值、PWM tick 等单位在 HAL 接口注释/调用方明确。
-- [ ] 先运行 `python -m studio.cli dts app/c8t6_microcar_soil --check` 与 `python -m studio.cli project audit-paths ..`，固件变更再做 Keil full rebuild（0 errors/0 warnings）。
+- [ ] 先运行 `../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
 
 ## 不应做的事
 

@@ -29,8 +29,8 @@ adc38_tracking {
 配置完成后执行 DTS 校验和生成：
 
 ```powershell
-python -m studio.cli dts app/<app> --check
-python -m studio.cli dts app/<app>
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
 ```
 
 ## 3. API 参考
@@ -48,7 +48,7 @@ python -m studio.cli dts app/<app>
 
 ## 4. 使用流程
 
-配置 ADC/provider、选通 GPIO 和校准节点，运行 `ark_dts.py --check` 与生成器；框架初始化成功后先确认校准，再周期调用 `adc38_tracking_read()`。
+配置 ADC/provider、选通 GPIO 和校准节点，运行 `Rust DTS 生成工具 --check` 与生成器；框架初始化成功后先确认校准，再周期调用 `adc38_tracking_read()`。
 
 ## 5. 注意事项
 

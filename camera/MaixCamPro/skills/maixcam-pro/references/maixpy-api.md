@@ -1,18 +1,18 @@
-# MaixPy API Notes
+# MaixPy API 说明
 
-Official documentation studied for this component:
+参考官方文档：
 
-- Index: https://wiki.sipeed.com/maixpy/doc/zh/index.html
-- Camera: https://wiki.sipeed.com/maixpy/doc/zh/vision/camera.html
-- Display: https://wiki.sipeed.com/maixpy/doc/zh/vision/display.html
-- Blob detection: https://wiki.sipeed.com/maixpy/doc/zh/vision/find_blobs.html
-- Image API: https://wiki.sipeed.com/maixpy/api/maix/image.html
-- UART: https://wiki.sipeed.com/maixpy/doc/zh/peripheral/uart.html
-- Touchscreen: https://wiki.sipeed.com/maixpy/doc/zh/vision/touchscreen.html
-- Touchscreen API: https://wiki.sipeed.com/maixpy/api/maix/touchscreen.html
-- Thread API: https://wiki.sipeed.com/maixpy/api/maix/thread.html
+- [文档首页](https://wiki.sipeed.com/maixpy/doc/zh/index.html)
+- [相机](https://wiki.sipeed.com/maixpy/doc/zh/vision/camera.html)
+- [显示](https://wiki.sipeed.com/maixpy/doc/zh/vision/display.html)
+- [色块检测](https://wiki.sipeed.com/maixpy/doc/zh/vision/find_blobs.html)
+- [图像 API](https://wiki.sipeed.com/maixpy/api/maix/image.html)
+- [串口](https://wiki.sipeed.com/maixpy/doc/zh/peripheral/uart.html)
+- [触摸](https://wiki.sipeed.com/maixpy/doc/zh/vision/touchscreen.html)
+- [触摸 API](https://wiki.sipeed.com/maixpy/api/maix/touchscreen.html)
+- [线程 API](https://wiki.sipeed.com/maixpy/api/maix/thread.html)
 
-## Camera and Application Loop
+## 相机与应用循环
 
 ```python
 from maix import app, camera
@@ -22,21 +22,11 @@ while not app.need_exit():
     frame = cam.read()
 ```
 
-Use `app.need_exit()` so the program exits cleanly from the MaixVision/App environment. `buff_num=2` allows capture and processing to overlap at the cost of one additional buffered frame of latency. The component captures at 480x320 and sends geometry in the same raw coordinate system. Do not force an unsupported camera FPS/geometry combination. The actual loop rate should be measured with `time.fps()`.
+使用 app.need_exit 保证从 MaixVision/App 环境正常退出。buff_num=2 让采集和处理重叠，但增加一帧缓存延迟。当前组件采集 480×320 并使用相同原始坐标；实际速度通过 time.fps 测量，不强制不支持的 FPS/分辨率组合。
 
-Camera dimensions are not limited to a small fixed enum. The official API accepts even width and height values and supports up to 2560x1440 on GC4653/OS04A10 sensors. Practical tiers are:
+相机尺寸不限于固定枚举，官方接口接受偶数宽高，GC4653/OS04A10 传感器最高 2560×1440。224×224、320×320 用于方形 AI 输入，320×224 为低成本宽画面，320×240 为 QVGA。480×320 在本检测器测得约 48 FPS；480×360 或 640×480 适合 4:3 显示，像素越多算法越慢。1280×720 传感器模式支持 60/80 FPS，但 Python 算法通常更慢；2560×1440 的 30 FPS 模式不适合本全帧色块循环。使用 camera.get_sensor_size 与 Camera/Display 的 width/height 查询真实尺寸。
 
-- `224x224` or `320x320`: square AI model input; side letterboxing on a wide display.
-- `320x224`: low-cost wide AI input.
-- `320x240`: QVGA 4:3, fast general-purpose vision.
-- `480x320`: custom 3:2, measured near 48 FPS in this detector.
-- `480x360` or `640x480`: 4:3 choices for a 4:3 display; more pixels reduce algorithm FPS.
-- `1280x720`: 16:9 HD, sensor mode supports 60/80 FPS but Python algorithms usually run much slower.
-- `2560x1440`: native 16:9 high-quality mode at 30 FPS; unsuitable for this full-frame Python blob loop.
-
-Use `camera.get_sensor_size()` for the attached sensor's native size. `Camera.width()`, `Camera.height()`, `Display.width()`, and `Display.height()` report actual runtime dimensions.
-
-## LAB Blob Detection
+## LAB 色块检测
 
 ```python
 blobs = frame.find_blobs(
@@ -50,19 +40,9 @@ blobs = frame.find_blobs(
 )
 ```
 
-Each RGB threshold is `[L_MIN, L_MAX, A_MIN, A_MAX, B_MIN, B_MAX]`. The official green example is `[0, 80, -120, -10, 0, 30]`. For a light-green target, raise the lower L bound and calibrate all limits on the real scene.
+阈值顺序为 L_MIN、L_MAX、A_MIN、A_MAX、B_MIN、B_MAX。官方绿色示例是 [0,80,-120,-10,0,30]；浅绿色需要提高亮度下限并现场标定。x_stride/y_stride 控制采样步长，增大会遗漏细小目标，当前使用 2/1。area_threshold 与 pixels_threshold 过滤完成检测的色块，不跳过全帧 LAB 扫描。merge 合并扩展矩形相交的色块，margin 控制扩展范围。索引 0..3 分别是 x、y、宽、高，按宽×高选择最大目标。
 
-`x_stride` and `y_stride` control the scan sampling interval. Larger values
-reduce sampled points but can miss thin or small targets. The current component
-uses the official `2/1` baseline. `area_threshold` filters completed blob
-bounding areas and `pixels_threshold` filters completed blobs with too few
-matching pixels; increasing these thresholds does not skip the full-frame LAB
-threshold scan. `merge=True` merges blobs whose expanded bounding rectangles
-intersect. `margin` expands the intersection test, allowing nearby fragments
-to merge. Blob indexes 0..3 are `x`, `y`, `width`, and `height`. Select the
-largest merged target with `max(blobs, key=lambda blob: blob[2] * blob[3])`.
-
-## Drawing and Display
+## 绘制与显示
 
 ```python
 from maix import display, image
@@ -76,13 +56,9 @@ frame.draw_string(x, y, "target", color=color)
 disp.show(frame, fit=image.Fit.FIT_CONTAIN)
 ```
 
-`draw_circle` can be redrawn each frame with a decreasing radius to provide a short sample-point animation. `draw_line(x1, y1, x2, y2, color, thickness=1)` is available when a custom marker is needed.
+draw_circle 可逐帧缩小半径作为采样动画；自定义标记可使用 draw_line。用 time.time 判断动画时长，time.fps_start/time.fps 测量滚动帧率，显示四舍五入后的整数 FPS。
 
-Use `time.time()` for elapsed-time measurements such as animation expiry and
-use `time.fps_start()` followed by `time.fps()` for the official rolling FPS
-measurement. Display FPS as an integer after rounding the measured frame rate.
-
-## Touchscreen and Thread
+## 触摸与线程
 
 ```python
 from maix import app, thread, time, touchscreen
@@ -96,12 +72,7 @@ def touch_worker(_args):
 thread.Thread(touch_worker).detach()
 ```
 
-`TouchScreen.read()` returns `(x, y, pressed)`. Detect a click by recording a pressed state and handling the following release. For lower CPU use, call `available(timeout)` and then `read0()` so the worker waits for an event instead of polling continuously.
-
-The component captures 480x320. Query `Display.width()` and `Display.height()` at runtime instead of assuming the physical output size.
-`disp.show(frame, fit=image.Fit.FIT_CONTAIN)` scales the frame and adds
-letterbox space. Convert a display-space touch point back to frame coordinates
-before using it:
+read 返回 x、y、pressed，通过按下后释放判定点击。降低 CPU 消耗可使用 available(timeout) 后 read0。显示采用 FIT_CONTAIN，必须将屏幕触摸坐标反向映射到图像坐标：
 
 ```python
 frame_x, frame_y = image.resize_map_pos_reverse(
@@ -110,16 +81,11 @@ frame_x, frame_y = image.resize_map_pos_reverse(
 )
 ```
 
-`Thread.__init__` accepts a Maix C-extension `capsule` as its optional second
-argument, not an arbitrary Python object. When a worker needs shared Python
-state, keep that state at module scope (protected by a lock) and start the
-worker without an `args` value, as shown above.
+Thread 构造的可选第二参数是 C 扩展 capsule，不是任意 Python 对象。共享 Python 状态保存在模块层并加锁，启动时不传 args。
 
-For RGB888 frames, `frame.get_pixel(x, y, rgbtuple=True)` returns `[R, G, B]`. `find_blobs` still expects LAB thresholds, so convert a sampled RGB value to LAB before constructing a threshold.
+官方 C++ 示例 [app_find_blobs](https://github.com/sipeed/MaixCDK/tree/main/projects/app_find_blobs) 使用 2/1 步长及原生尺寸，可作为 Python 性能上限参考。相机循环不直接 serial.write；将最新完整包放入加锁状态，由独立发送线程发送，替换旧待发送包以避免串口背压拖慢画面。
 
-The component stores its threshold JSON at `/root/maixcam_threshold.json` with the schema `{"thresholds": [[L_MIN, L_MAX, A_MIN, A_MAX, B_MIN, B_MAX]]}`. Validate ranges before using values loaded from disk.
-
-## UART
+## 二进制协议
 
 ```python
 from maix import err, pinmap, uart
@@ -128,45 +94,10 @@ from maix.v1.machine import UART
 serial = UART("/dev/ttyS0", 115200)
 ```
 
-This project uses the screen-side connector and follows the board-proven `/dev/ttyS0` `maix.v1.machine.UART` implementation without pinmap calls. The separate A19/A18 header uses UART1 and `/dev/ttyS1`; select it only when wired to those pins.
+小于号表示小端，B 是无符号字节，H 是无符号 16 位整数。命令紧跟长度；命令 1 花盆帧为 14 字节，命令 2 至 5 的空请求为 5 字节，STM32 响应追加状态与可选标定数组。
 
-The official native color-block application is available at
-`https://github.com/sipeed/MaixCDK/tree/main/projects/app_find_blobs`.
-Its C++ loop uses `x_stride=2`, `y_stride=1`, and native camera/display
-dimensions; this explains why it is a useful upper-bound performance reference
-for the Python implementation.
+## 性能诊断与 OpenCV
 
-The camera loop must not call `serial.write` directly. Store the newest complete
-packet under a lock, and let a detached worker take the packet and call
-`serial.write`. Replacing an older pending packet prevents UART backpressure
-from delaying capture and display.
+PROFILE_DEBUG 开启时每秒打印 MAIX_PROFILE。read_ms、find_ms、draw_ms、show_ms 分别表示采集、检测、Python 绘制和显示提交。camera_fps 是驱动帧率，loop_fps 是循环实测；show_call_ms 是单次提交，show_ms 是分摊到检测帧的耗时。MaixVision 会额外压缩上传图像，正式测速应脱离 MaixVision 并关闭分析输出。
 
-## Binary Packet Encoding
-
-```python
-from struct import pack
-
-packet = pack("<BBBBBHHHHB", 0x5A, 0x5B, 14, 1, flags, cx, cy, width, height, 0xA5)
-serial_state.publish(packet)
-```
-
-`<` selects little-endian, `B` is one unsigned byte, and `H` is one unsigned 16-bit value. The command byte follows `len`; command1 flower frames are14 bytes. Commands2 through5 use5-byte empty requests, while STM32 responses add a status byte and optional calibration arrays.
-
-## Performance Diagnostics
-
-With `PROFILE_DEBUG = True`, the component prints one `MAIX_PROFILE` line per
-second. `read_ms` measures camera capture, `find_ms` measures `find_blobs`,
-`draw_ms` measures Python annotation work, and `show_ms` measures display
-submission. `camera_fps` is the camera driver's rate; `loop_fps` is the measured
-Python loop rate. `show_call_ms` is the cost of one display submission, while
-`show_ms` is that cost amortized across all detection frames. In MaixVision
-mode, `Display.show` also compresses and sends the image to the workstation;
-measure production FPS by running the installed package outside MaixVision.
-Disable profiling before the final FPS measurement.
-# OpenCV interop
-
-- Official guide: `https://wiki.sipeed.com/maixpy/doc/zh/vision/opencv.html`
-- `image.image2cv(img, ensure_bgr=False, copy=False)` exposes a compatible camera buffer as a NumPy array without copying. The source `Image` must remain alive while OpenCV uses the array.
-- Request `image.Format.FMT_BGR888` from the camera when OpenCV will consume the frame; this avoids an RGB-to-BGR conversion before OpenCV processing.
-- Prefer a camera/ISP channel at the detection resolution over `cv2.resize` in every loop. Use `Camera.add_channel` only when a separate full-resolution display stream is enabled.
-- OpenCV LAB channels are unsigned 8-bit values. Convert Maix/OpenMV thresholds with `L_cv = round(L * 255 / 100)`, `a_cv = a + 128`, and `b_cv = b + 128`.
+[OpenCV 官方说明](https://wiki.sipeed.com/maixpy/doc/zh/vision/opencv.html)：image.image2cv 的 ensure_bgr=False、copy=False 可共享 NumPy 缓冲区，使用期间原 Image 必须存活。相机提供 BGR888 可避免颜色转换；优先使用检测分辨率的相机/ISP 通道，不每帧 resize。只有启用独立全分辨率显示流时才加相机通道。OpenCV LAB 是无符号 8 位：L_cv=round(L×255/100)，a_cv=a+128，b_cv=b+128。

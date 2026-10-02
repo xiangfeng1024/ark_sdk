@@ -69,8 +69,8 @@ component/
 可使用组件生成器从 `doc/component_template/` 创建组件，并写入 central catalog 条目：
 
 ```powershell
-python -m studio.cli component-create --sdk-root . --name tof_sensor --hal i2c --check
-python -m studio.cli component-create --sdk-root . --name tof_sensor --hal i2c
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 生成器不会修改任何 App DTS。仍需将组件节点加入 App DTS，再运行 DTS 生成和完整校验清单。
@@ -100,7 +100,7 @@ PC13 当前的 `GPIO output level` 是 Low。板载 LED 为低电平点亮，这
 
 如果后续重新配置 UART，必须保留 USART1 全局中断。没有该中断时，DMA 半满和满中断仍可能工作，但 TX DMA 完成回调和短帧 UART IDLE 事件无法走完整 HAL 链路。
 
-当前SPI1 TX DMA为High优先级，USART1 RX/TX DMA为Low优先级。双屏动画和921600 UART CLI并发实测正常；如果后续UART持续大流量接收并出现溢出，再在CubeMX中提高USART1 RX DMA优先级，不要仅凭通道数量推断存在仲裁故障。
+当前SPI1 TX DMA为High优先级，USART1 RX/TX DMA为Low优先级。双屏动画和921600 UART CLI并发实测正常；如果后续UART持续大流量接收并出现溢出，再在CubeMX中提高USART1 RX DMA优先级，不要仅凭通道数量明确指定存在仲裁故障。
 
 SPI1 当前已是1-Line半双工主机发送模式，PA6未被占用。SPI1 TX DMA为DMA1 Channel 3、Normal、字节宽度、内存递增、High优先级；DMA1 Channel 3和SPI1全局中断优先级均为5。
 
@@ -179,9 +179,9 @@ DTS不再保存PC构建元数据。工具根据根compatible取得版型前缀�
 常用命令：
 
 ```powershell
-python -m studio.cli dts ark_sdk\app\c8t6_microcar_soil --check
-python -m studio.cli dts ark_sdk\app\c8t6_microcar_soil
-python -m studio.cli configure ark_sdk\app\c8t6_microcar_soil\c8t6_microcar_soil.dts
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 固定生成文件为`include/ark_dts_generated.h`和`src/ark_dts_generated.c`，禁止手工修改。它们包含无堆只读OF表、CubeMX句柄与PWM通道绑定、DTS推导的裁剪宏，以及自动注册组件的`ark_dts_register_components()`。
@@ -271,8 +271,8 @@ HAL适配层通过生成的 `ark_hal_i2c_handles[]`、`ark_hal_spi_handles[]`、
 ```
 
 ```powershell
-python -m studio.cli configure ark_sdk\app\blinky\app.json --dry-run
-python -m studio.cli configure ark_sdk\app\blinky\app.json
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 UART 已由 CubeMX 生成，所以 UART manifest 不再把 `stm32f1xx_hal_uart.c` 加入 SDK Vendor 组。同步器会清理旧 SDK 添加的 `HAL_UART_MODULE_ENABLED` 命令行宏，使用 CubeMX 在 `stm32f1xx_hal_conf.h` 中生成的宏，避免重复源码和宏重定义警告。
@@ -685,41 +685,16 @@ Watchdog组件设为二级初始化；OLED作为一级组件先完成约200 ms�
 
 Watchdog动态任务必须把 `xTaskCreate()` 返回的句柄保存到组件自己的持久变量，不能使用 `NULL` 输出句柄，以便明确管理任务生命周期并支持后续诊断。
 
-## 10. 脚本与快速工具
+## 10. 独立开发工具
 
-新的唯一推荐桌面入口是ARK CREW Studio：
+工具现由 Rust Studio 提供，位于独立仓库，支持 GUI 与 CLI。SDK、App、工程、Target、Keil 独立选择；任务冻结本次参数，工具不得从其它选择明确指定工程。
 
-```powershell
-python -m pip install -r ark_sdk\studio\requirements.txt
-python -m studio --dev
-```
-
-
-`--dev`模式会监视当前SDK的`studio/**/*.py`。Python源码变化后250ms防抖重启Brain，新后端发出`system.ready`后Renderer自动重新获取快照，避免前端已由Vite热更新但同步、清理等任务仍运行旧Python代码。生产模式不启用源码热重载。
-
-
-打开工作区或切换App后自动执行快检，手动点击“只读深检”时再检查Python/Node版本、Keil与ARMCC、Keil target/输出目录及各工具增强条件。两种检查都不编译、不烧录、不清理、不打开串口；探针检查通过OpenOCD在1200ms上限内读取SWD DPIDR和目标CPU，只确认探针及板卡连接。界面显示检查模式、总耗时及每项真实耗时。工具清单必须声明有效`check`和`progress`；不可用工具保留卡片和详情但禁用执行。
-
-Studio标题栏采用VS Code密度布局：最左侧保留产品标识，文件/工具/视图/帮助菜单连接真实操作，右侧显示`工作区 › 当前App`。Windows UI使用VS Code同款`"Segoe WPC", "Segoe UI", sans-serif`、13px、字间距0和400/600字重；路径和结构化日志使用`Consolas, "Courier New", monospace`，日志字号14px。工具卡压缩到约132px，标题13px/600、正文13px/400并将描述限制为两行。
-
-任务监控和SDK检查共用16px进度轨道。DTS、同步、清理等工具使用真实阶段。增量构建在启动前比较`.d`依赖、源文件与`.o`时间，全量构建读取Keil target全部可编译单元；随后按实际`compiling/assembling`数量显示`已编译/本次需编译`。烧录阶段使用固件大小、目标Flash和探针经验速率估算阶段内部进度，并由真实擦除、编程、`Verify OK`节点校正。Brain后置校验通过后才显示100%。
-
-“内存分析”按钮读取最近一次成功编译生成的Keil Map，以进度条和表格展示Flash/SRAM总量、App/各组件/HAL/OS/厂商库/杂项分类，以及每个目标文件的Code、RO、RW、ZI。Flash采用 `Code + RO + RW`，SRAM采用 `RW + ZI`。任务页另行扫描动态任务配置栈并标记生命周期；栈来自已经计入ZI的FreeRTOS heap，不能重复计入SRAM，声明栈合计也不代表运行峰值。
-
-Studio当前14个正式工具均已接入并全部显示在工具中心：新建App、DTS检查/生成/打开、Keil同步、增量/全量编译、增量编译并烧录、烧录现有固件、安全清理、CubeMX工程克隆、独立打包、内存分析和独立PowerShell串口收发监视。`quick`只控制顶部菜单快捷入口，不再过滤工作台卡片。每份清单都必须提供可执行的`check`、`progress`和`parameter_mode`契约；参数模式分为无需参数、可记忆固定参数和每次指定动态参数。SDK检查统一提供`UV4.exe`路径；组合烧录、单独烧录和清理直接执行，同步、克隆、打包和新建App展示具体影响确认。
-
-
-
-`package --output <父目录>`和独立`studio/tooling/package_project.py`以所选App JSON及其绑定的Keil工程为输入。打包前先生成系统配置、同步所选App到Keil，并验证`ARK_SDK/App`与选择一致。客户包复制完整CubeMX工程，但`ark_sdk`仅包含通用HAL头文件、所选平台HAL源码、`component/common`、所选组件和所选App；明确排除`camera/`、`studio/`、其它App/组件、SDK文档、skill、资料和日志。副本Keil源码及包含目录统一改为包内`ark_sdk`，工具拒绝任何包外路径、缺失路径或符号链接，并且只有副本全量rebuild成功后才生成`<Cube工程名>_package`最终目录。同名目标不覆盖；构建输出在验证后清除，只保留`PACKAGE_BUILD.log`和`PACKAGE_INFO.md`。每个包根目录生成带安全校验的`kill.bat`，用于清除后续Keil构建产生的target输出目录、列表目录、`.keil`日志和MDK根目录构建文件，同时保留源码、工程配置及打包验证记录。
-
-每次 `sync` 和 `flash` 都会从 app JSON 应用完整Keil设备配置，不只更新 `<Device>`：还会同步Vendor、PackID/URL、CPU、FlashDriverDll、寄存器/SVD路径，以及 `.uvoptx` 内所有探针项的FLM算法、Flash范围和Reset-and-Run位。GUI设备下拉框当前提供 `STM32F103C8` 与 `GD32F103C8`；脚本也接受带封装后缀的 `STM32F103C8T6`/`GD32F103C8T6` 别名并归一化。烧录后仍以日志出现 `Application running ...` 作为最终验证。
-
-每一个脚本的完整作用、参数、示例和常见问题见 `doc/studio_tooling.md`。
+DTS 校验与生成无需 Keil 工程；编译仅需要工程、Target 与 Keil。同步、配置和打包在执行时检查兼容性，只修改明确目标。具体输入、工具创建规范与命令见 [开发工具说明](studio_tooling.md)。
 
 ## 11. 编译与烧录
 
 ```powershell
-python -m studio.cli build ark_stm32_projects\c8t6_demo\MDK-ARM\c8t6_demo.uvprojx --target c8t6_demo
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 烧录只在用户明确要求且硬件已连接时执行。
@@ -743,13 +718,13 @@ python -m studio.cli build ark_stm32_projects\c8t6_demo\MDK-ARM\c8t6_demo.uvproj
 后续克隆其它CubeMX工程可直接启动图形界面，选择源工程、目标父目录、输入工程名并一键克隆：
 
 ```powershell
-python -m studio.cli project
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 等价命令行为：
 
 ```powershell
-python -m studio.cli project clone `
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
   ark_stm32_projects\c8t6_demo `
   ark_stm32_projects\c8t6_usb_cdc `
   --name c8t6_usb_cdc `
@@ -759,7 +734,7 @@ python -m studio.cli project clone `
 目标目录必须不存在，脚本不会覆盖已有工程。默认把SDK引用写成相对路径；只有明确传入 `--sdk-junction` 时才建立目录联接。先加 `--dry-run` 可以只检查源工程、目标、名称、SDK路径和App配置。由于不同MCU和CubeMX版本的 `.ioc` middleware键并不稳定，脚本不会通过文本替换伪造USB配置；在对应版本CubeMX UI生成后，用审计命令检查 `.ioc`、HAL宏、初始化调用、中断链和CDC文件：
 
 ```powershell
-python -m studio.cli project audit-usb-cdc ark_stm32_projects\c8t6_usb_cdc
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
 ```
 
 通用 `ark_stream_t` 接口及注册表位于 `component/common`。UART 的 `stream` 组件和 USB 的 `usb` 组件只是两个后端：前者维护 UART DMA-to-idle，后者把 CDC OUT 中断数据投递到 256 字节 FreeRTOS StreamBuffer，并用互斥锁串行执行 CDC IN。CLI 只按名称查找 `debug`，因此不包含 UART 或 USB 的实现细节。只有 App 选择 OLED 时才编译 `oled_fb` 命令。USB 上电时电脑可能尚未枚举完成，CLI 任务会等待并重试欢迎信息，连接成功后再显示提示符。
@@ -889,14 +864,15 @@ ADC1虽然在CubeMX中登记了4个输入通道，但SDK的动态读取接口每
 ```powershell
 ```
 
-## 16. ARK CREW Studio 大脑
+## 16. Rust Studio 工具服务
 
+工具提供明确参数、取消、真实日志、资源锁和后置校验。编译确认零错误与 AXF；烧录需要确认下载校验及运行结果。清理检查目录边界，创建失败回滚，打包先完整构建再发布。
 
-任务固定使用`queued/running/succeeded/failed/cancelled/blocked`状态。同步、编译、烧录和清理按Keil工程路径互斥；烧录额外锁定探针。任务执行前不再重复运行环境preflight，只门禁工作区、最新SDK检查、工具可用性、参数和资源锁。`event`工具接受主动真实节点，`query`工具定时查询外部真实状态，`completion`工具运行中保持0并在成功后跳到100%。退出码为0仍不代表成功：同步必须核对`ARK_SDK/App`，编译必须0错误且AXF存在，烧录必须同时出现`Verify OK`与`Application running ...`。
-
-App下拉框只改变Studio的工具选择，不自动同步Keil。SDK环境检查分为自动快检和手动深检；深检会运行版本查询并解析更多工程信息，但不会编译、烧录、清理或打开串口。探针检查是硬件例外：通过短超时OpenOCD只读SWD examination读取DPIDR和CPU，用于确认探针与板卡连接，但不reset、halt、erase或program。检查快照包含模式和总耗时，每项包含深度和耗时。日志记录为带序号、可选时间、级别、来源和文本的结构化JSONL；级别为`command/debug/info/success/warning/error`。底部监控只在工程控制台出现，日志位于底部24px内时自动跟随，用户向上滚动后暂停。设置、工具记忆参数、最近100次任务和完整日志位于`%LOCALAPPDATA%\ARKCrewStudio`。新增工具遵循`studio/docs/TOOL_PLUGINS.md`。
+组合仅在本机保存。选择 App 不自动同步工程，选择 SDK 不更换 App，工程变更使 Target 回到待选择。本轮不新增任务历史或产物浏览独立页面。
 
 ## ESP-01 TCP 网络 App
+
+以下设备侧协议及网页流程包含历史联调记录。当前 ark_web 仓库为空，网页功能不能视为当前交付。
 
 c8t6_ark_net 的 CLI 是 USART1/921600：wifi diag、wifi at、net status、net diag 可用于诊断。正常状态为 Wi-Fi state=2、UART errors=0、net session=1 和 tcp=1。
 

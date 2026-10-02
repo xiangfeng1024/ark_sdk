@@ -79,8 +79,8 @@ description: 在 ARK CREW SDK 中新增、配置、调试或审查设备组件�
 3. 运行生成器检查并生成：
 
 ```powershell
-python -m studio.cli dts app/<name> --check
-python -m studio.cli dts app/<name>
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
 ```
 
 4. 检查 `ark_dts_generated.c/.h` 中组件裁剪宏、配置对象、HAL 绑定和 `ark_dts_register_components()` 顺序；生成文件不可手改。
@@ -114,7 +114,7 @@ python -m studio.cli dts app/<name>
 - [ ] disabled 节点不会生成/注册；HAL provider、GPIO、PWM、总线 ID 和实例数量均在容量范围内。
 - [ ] 组件不手改 `ark_dts_generated.c/.h`、CubeMX 生成文件或 IRQ；需要硬件变更时修改 DTS/.ioc 后重新生成。
 - [ ] 自检耗时有界，任务栈足够；高负载 AT/HTTP、传感器融合等工作由独立动态任务承担。
-- [ ] 运行 `python -m studio.cli dts app/c8t6_microcar_soil --check`、`python -m studio.cli project audit-paths ..`，并执行相关 `studio/tests`；固件改动再做 Keil full rebuild。
+- [ ] 运行 `../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
 
 ## 明确禁止
 

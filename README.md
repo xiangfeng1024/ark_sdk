@@ -1,65 +1,28 @@
-# ark_sdk
+# 方舟小队 SDK
 
-ARK CREW embedded SDK source repository. This GitHub repository starts with a new source snapshot; no legacy Gitea history is imported.
+本仓库维护 STM32/GD32 App、HAL、组件、catalog、DTS 与开发文档。桌面工具在独立 Rust Studio 仓库，开发板 CubeMX/Keil 工程在独立 STM32 仓库。
 
-## ARK CREW Studio
+## 使用
 
-默认桌面工作台使用 PySide6，首次启动可选择任意 ARK CREW SDK 工作区：
+在 Studio 分别选择 SDK、App DTS、开发板工程、Target 和 Keil，可保存本机组合。各仓库可放在不同目录，不需要软链接。普通 Keil 编译无需 App 或 SDK，DTS 校验与生成无需开发板工程。
 
-```powershell
-python -m pip install -r studio/requirements.txt
-python -m studio --check --workspace .
-python -m studio --workspace .
-python -m studio --build
-```
+维护中的 App 是 c8t6_microcar_soil 和 c8t6_ark_net；后者默认对应网络板 c8t6_xiaoyan_net，但该关联仅是推荐，可以明确选择兼容工程。其它 JSON App 是历史示例。
 
-Windows 发布包输出到 `studio/dist/ARKCrewStudio-0.3.0-windows-x64/`。Studio、Brain、
-工具清单和SDK Python工具链均位于`studio/`，使用统一的PySide6与Python运行环境。
+工具使用和 JSON 参数示例见 [开发工具说明](doc/studio_tooling.md)。组件文档与代码模板集中在 doc/components 和 doc/component_template，配置 schema 在 doc/schemas。
 
-## 提交规范
+## 目录
 
-提交消息使用以下结构：
+- app：业务源码、App DTS 与项目需求。
+- hal：平台适配和 HAL catalog。
+- component：组件源码、公共 OF 框架和组件 catalog。
+- camera：独立相机脚本与协议。
+- doc：开发说明、组件指南、模板与 schema。
+- skills：项目开发路由与约束。
 
-```text
-Type: <类型>
+旧 Python Studio 已迁移到 Rust 工具并从正式源码移除。相机 Python 脚本属于目标设备应用，继续保留。
 
-Module: <模块路径>
+## 开发与授权
 
-<变更内容>
+App DTS 是配置源；生成文件通过 Rust 工具更新，不手工修改 CubeMX 代码。遵循 [开发规则](AGENT.md)，按特性分支与 PR 协作。
 
-Change-Id: I<40 位十六进制字符>
-Signed-off-by: <姓名> <邮箱>
-```
-
-仓库已提供 `.githooks/commit-msg`，会在提交时自动生成 `Change-Id`。首次克隆后执行：
-
-```bash
-git config core.hooksPath .githooks
-```
-
-`Change-Id` 是便于检索和关联修订的提交尾注；Git 本身还会为每个提交自动生成不可变的提交对象 ID（commit SHA），可用 `git rev-parse HEAD` 查看。
-
-## Workspace layout
-
-Clone the SDK and STM32 repositories as siblings. No symbolic links are required:
-
-```text
-workspace/
-  ark_sdk/
-  ark_stm32_projects/
-```
-
-The two maintained DTS Apps are c8t6_microcar_soil and c8t6_ark_net (the latter maps to the existing c8t6_xiaoyan_net board folder). Other JSON-based Apps are retained as historical examples. Use the maintained DTS Apps for the current Studio configuration workflow.
-
-```powershell
-python -m pytest studio/tests -q
-python -m studio.cli dts app/c8t6_microcar_soil --check
-python -m studio.cli dts app/c8t6_ark_net --check
-python -m studio --check --workspace .
-```
-
-Documentation, component guides, generator templates and SDK schemas are consolidated under doc/. studio/docs retains application-specific architecture and UI documentation. Build/distribution output, caches and logs are excluded; fonts, icons, schemas, licenses, hand-maintained PyInstaller spec and DTS-generated build inputs are retained.
-
-The network DTS contains example placeholders for Wi-Fi and device passwords. Set local configuration before connecting to a real network, and regenerate DTS output using the CLI; do not commit real credentials. The existing LICENSE.txt and third-party notices remain in force.
-
-Detailed clean-source tests and the existing firmware build limitations are documented in [doc/SOURCE-VERIFICATION.md](doc/SOURCE-VERIFICATION.md).
+保留 LICENSE.txt 与第三方授权。本仓库公开可见不代表变更原非商业许可。构建日志、凭据、缓存和发布程序不上传。已知构建限制和迁移验证见 [验证记录](doc/SOURCE-VERIFICATION.md)。

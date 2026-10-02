@@ -1,39 +1,14 @@
 ---
 name: tooling
-description: 使用、扩展和排查ARK CREW Studio内置Python工具链，适用于DTS、Keil、组件/App创建、工程管理、串口、打包、内存分析、工具清单和Brain任务。
+description: 使用和扩展独立 Rust SDK 开发工具，适用于 DTS、Keil、创建、同步、清理、打包、编码、内存和串口。
 ---
 
-# Studio Python工具链
+# SDK Rust 工具
 
-事实来源为`../../studio/tooling/`、`../../studio/brain/`、`../../studio/resources/tools/`和`../../studio/tests/`。工具必须通过包导入和稳定handler调用。
+先读 `../../doc/studio_tooling.md`。实际工具位于独立 Studio 仓库 `tools/sdk/`，同级检出时为 `../../../ark_stdio_rust/tools/sdk/`。该仓库为私有，需要相应访问权限；不要假设 SDK 内存在 Python Studio。
 
-## 调用方式
+工具通过稳定 ID 与 UTF-8 JSON 参数执行，GUI 和 CLI 共用 Rust 实现。源码事实是工具 Input、catalog、DTS 和测试。显式传入 SDK/App/工程/Target，禁止隐式同名工程发现与全局 SDK 状态。
 
-Studio内部通过handler直接import Python模块。CI和无界面操作使用：
+DTS 校验/生成不需要 Keil；编译不需要 SDK 或 App。同步只修改指定 Target。写操作先预览，测试使用隔离副本；清理不删除厂商库，克隆不生成软链接，打包只修改暂存包并验证完整构建。检查真实日志和产物，缺少硬件如实报告。
 
-```powershell
-python -m studio.cli --help
-python -m studio.cli dts app/c8t6_microcar_soil --check
-python -m studio.cli configure app/c8t6_microcar_soil/c8t6_microcar_soil.dts --dry-run
-python -m studio.cli component-create --sdk-root . --name example --hal gpio --check
-```
-
-## 工具规则
-
-- 清单只允许`entrypoint.kind=builtin`和稳定handler，禁止脚本、文件和模块路径。
-- Python工具应提供可复用函数；命令行`main()`只负责参数解析。
-- Brain任务必须报告结构化进度、日志、资源锁、取消结果和后置校验。
-- Keil、OpenOCD、DTC等外部进程使用`studio.tooling.process_runner`隐藏窗口并捕获输出。
-- VS Code和资源管理器仅在用户明确请求时显示。
-- 所有源码和协议使用UTF-8；不得用`errors=replace`掩盖JSONL协议错误。
-
-## 验证
-
-```powershell
-python -m pytest studio/tests -q
-python -m studio --check --workspace .
-python -m studio.cli dts app/c8t6_ark_net --check
-python -m studio.cli project audit-paths ..
-```
-
-有副作用的构建、烧录、清理、克隆和打包测试必须使用临时工程、dry-run或明确测试模式，不得操作真实用户输出。
+在 Studio 仓库运行 `cargo test --manifest-path tools/sdk/Cargo.toml`。具体 CLI 参数示例见上述文档。
