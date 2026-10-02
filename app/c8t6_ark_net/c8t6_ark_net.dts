@@ -1,0 +1,171 @@
+/dts-v1/;
+
+/ {
+    model = "ARK CREW ARK Network Demo";
+    compatible = "c8t6_ark_net", "stm32f103c8";
+
+    sys {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        gpioa: gpioa {
+            compatible = "ark_hal_gpio";
+            reg = <0x40010800 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpioa";
+            status = "okay";
+        };
+
+        gpiob: gpiob {
+            compatible = "ark_hal_gpio";
+            reg = <0x40010c00 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpiob";
+            status = "okay";
+        };
+
+        gpioc: gpioc {
+            compatible = "ark_hal_gpio";
+            reg = <0x40011000 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpioc";
+            status = "okay";
+        };
+
+        iwdg: iwdg {
+            compatible = "ark_hal_watchdog";
+            ark,logical-id = "watchdog1";
+            ark,cubemx-handle = "hiwdg";
+            ark,cubemx-header = "iwdg.h";
+            status = "okay";
+        };
+
+        watchdog {
+            compatible = "watchdog";
+            status = "okay";
+        };
+
+        spi1: spi1 {
+            compatible = "ark_hal_spi";
+            reg = <0x40013000 0x400>;
+            ark,logical-id = "spi1";
+            ark,cubemx-handle = "hspi1";
+            ark,cubemx-header = "spi.h";
+            status = "okay";
+
+            lcd {
+                compatible = "lcd";
+                bl-gpios = <&gpioa 1 1>;
+                cs-gpios = <&gpioa 2 1>;
+                dc-gpios = <&gpioa 3 1>;
+                reset-gpios = <&gpioa 4 1>;
+                status = "okay";
+            };
+        };
+
+        uart1: uart1 {
+            compatible = "ark_hal_uart";
+            reg = <0x40013800 0x400>;
+            ark,logical-id = "uart1";
+            ark,cubemx-handle = "huart1";
+            ark,cubemx-header = "usart.h";
+            current-speed = <921600>;
+            status = "okay";
+
+            stream {
+                compatible = "stream";
+                ark,stream-name = "cli";
+                current-speed = <921600>;
+                status = "okay";
+            };
+
+            uart_cli {
+                compatible = "uart_cli";
+                ark,stream-name = "cli";
+                ark,welcome = "ARK CREW ARK NET ready";
+                status = "okay";
+            };
+        };
+
+        uart3: uart3 {
+            compatible = "ark_hal_uart";
+            reg = <0x40004800 0x400>;
+            ark,logical-id = "uart3";
+            ark,cubemx-handle = "huart3";
+            ark,cubemx-header = "usart.h";
+            current-speed = <115200>;
+            status = "okay";
+
+            esp01_stream: stream {
+                compatible = "stream";
+                ark,stream-name = "esp01";
+                ark,rx-mode = "interrupt";
+                status = "okay";
+
+                wifi {
+                    compatible = "wifi";
+                    status = "okay";
+
+                    wifi_esp_at {
+                        compatible = "wifi_esp_at";
+                        ark,stream-name = "esp01";
+                        current-speed = <115200>;
+                        ark,ssid = "YOUR_WIFI_SSID";
+                        ark,password = "CHANGE_ME_WIFI_PASSWORD";
+                        ark,udp-enabled;
+                        status = "okay";
+                    };
+                };
+            };
+        };
+
+        leds {
+            compatible = "led";
+            status = "okay";
+
+            led@0 {
+                reg = <0>;
+                gpios = <&gpioc 13 0>;
+                status = "okay";
+            };
+        };
+
+        dht11 {
+            compatible = "dht11";
+            /* PB5 is a single-wire, open-drain DHT11 data line. */
+            data-gpios = <&gpiob 5 0>;
+            status = "okay";
+        };
+
+        json {
+            compatible = "json";
+            status = "okay";
+        };
+
+        ark_net {
+            compatible = "ark_net";
+            ark,host = "154.202.119.145";
+            /* The HTTP dashboard uses 8080; the device uses its TCP gateway. */
+            ark,port = <9000>;
+            ark,device-id = "c8t6-ark-net-01";
+            /* Device registration password; never expose it in the web UI. */
+            ark,device-password = "CHANGE_ME_DEVICE_PASSWORD";
+            ark,upload-period-ms = <5000>;
+            ark,poll-period-ms = <2000>;
+            ark,request-timeout-ms = <8000>;
+            status = "okay";
+        };
+    };
+
+    software {
+        display {
+            ark,refresh-period-ms = <500>;
+            status = "okay";
+        };
+    };
+};

@@ -1,0 +1,65 @@
+#!/bin/sh
+# Gerrit-compatible Change-Id hook for this Gitea repository.
+
+set -u
+
+if test "$#" != 1 || test ! -f "$1"; then
+    echo "commit-msg requires one existing message file" >&2
+    exit 1
+fi
+
+# Match Gerrit's opt-out and fixup/squash behavior.
+case "$(git config --get gerrit.createChangeId || true)" in
+    false)
+        exit 0
+        ;;
+    always)
+        ;;
+    *)
+        if head -n1 "$1" | LC_ALL=C grep -q '^[a-z][a-z]*! '; then
+            exit 0
+        fi
+        ;;
+esac
+
+if git rev-parse --verify HEAD >/dev/null 2>&1; then
+    refhash=$(git rev-parse HEAD)
+else
+    refhash=$(git hash-object -t tree /dev/null)
+fi
+
+# This follows Gerrit's input: committer identity, parent ref, and message.
+change_hash=$({ git var GIT_COMMITTER_IDENT; echo "$refhash"; cat "$1"; } | git hash-object --stdin)
+change_id="I$change_hash"
+
+if git -c 'trailer.separators=:=' interpret-trailers --no-divider --parse < "$1" |
+    grep -qi "^Change-Id: I[0-9a-f]\{40\}$"; then
+    exit 0
+fi
+
+tmp="$1.tmp.$change_hash"
+tmp2="$1.tmp.$change_hash.2"
+trap 'rm -f "$tmp" "$tmp2"' EXIT
+
+if ! sed -e '/>8/q' "$1" | git stripspace --strip-comments > "$tmp"; then
+    echo "cannot strip comments from $1" >&2
+    exit 1
+fi
+if test ! -s "$tmp"; then
+    echo "commit message is empty: $1" >&2
+    exit 1
+fi
+
+# Insert Change-Id immediately before Signed-off-by, as Gerrit does.
+if ! git interpret-trailers --no-divider \
+        --trailer "Signed-off-by: SENTINEL" < "$1" > "$tmp2"; then
+    exit 1
+fi
+if ! git -c trailer.where=before interpret-trailers --no-divider \
+        --trailer "Signed-off-by: Change-Id: $change_id" < "$tmp2" |
+    sed -e 's/^Signed-off-by: \(Change-Id: \)/\1/' \
+        -e '/^Signed-off-by: SENTINEL$/d' > "$tmp"; then
+    exit 1
+fi
+
+mv "$tmp" "$1"

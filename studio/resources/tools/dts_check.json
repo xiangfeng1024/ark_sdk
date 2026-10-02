@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "dts.check",
+  "title": "检查DTS",
+  "description": "只读校验当前App的DTS，并检查生成的运行时C/H是否过期。",
+  "category": "配置",
+  "icon": "FileCheck2",
+  "order": 20,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {"kind": "builtin", "handler": "dts_check"},
+  "check": {"handler": "dts_config", "timeout_ms": 5000},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": ["dts_current"],
+  "resources": [],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": true
+}

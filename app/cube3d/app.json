@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "app": "cube3d",
+  "platform": "stm32f1",
+  "hal": [
+    "gpio",
+    "i2c",
+    "watchdog",
+    "uart"
+  ],
+  "components": [
+    "led",
+    "oled",
+    "stream",
+    "watchdog",
+    "uart_cli"
+  ],
+  "keil": {
+    "project": "../../../ark_stm32_projects/c8t6_demo/MDK-ARM/c8t6_demo.uvprojx",
+    "target": "c8t6_demo",
+    "sdk_link": "../../ark_sdk",
+    "device": "STM32F103C8",
+    "reset_and_run": true
+  }
+}

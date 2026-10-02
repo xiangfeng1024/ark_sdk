@@ -1,0 +1,84 @@
+{
+  "$schema": "../../doc/schemas/sys_config.schema.json",
+  "schema_version": 1,
+  "app": "aircraft3d",
+
+  // Aircraft3D状态灯使用LED实例0。
+  "application": {
+    "status_led_id": 0
+  },
+
+  // 外设电气参数由CubeMX管理；这里仅绑定生成的HAL句柄。
+  "hal": {
+    "gpio": {},
+    "i2c": {
+      "instances": [
+        // SH1106 OLED使用I2C1（PB8/PB9），400 kHz阻塞收发。
+        {
+          "id": "i2c1",
+          "handle": "hi2c1",
+          "header": "i2c.h"
+        },
+        // ICM20602使用I2C2（PB10/PB11），400 kHz阻塞收发。
+        {
+          "id": "i2c2",
+          "handle": "hi2c2",
+          "header": "i2c.h"
+        }
+      ]
+    },
+    "uart": {
+      "instances": [
+        // 调试CLI使用USART1。
+        {
+          "id": "uart1",
+          "handle": "huart1",
+          "header": "usart.h"
+        }
+      ]
+    },
+    "watchdog": {
+      "handle": "hiwdg",
+      "header": "iwdg.h"
+    }
+  },
+
+  "components": {
+    // SA0为高时地址是0x69；INT为高有效脉冲，PB0使用上升沿触发并默认下拉。
+    "icm20602": {
+      "i2c": "i2c2",
+      "address": 105,
+      "INT": {
+        "pin": "PB0",
+        "active_level": 1
+      }
+    },
+    // PC13板载LED低电平点亮。
+    "led": {
+      "instances": [
+        {
+          "id": 0,
+          "gpio": {
+            "pin": "PC13",
+            "active_level": 0
+          }
+        }
+      ]
+    },
+    // SH1106固定协议参数由OLED组件维护。
+    "oled": {
+      "i2c": "i2c1"
+    },
+    // CLI波特率必须与CubeMX USART1一致。
+    // 调试字节流当前使用USART1；后续USB后端保持相同ark_stream接口。
+    "stream": {
+      "name": "debug",
+      "uart": "uart1",
+      "baud_rate": 921600
+    },
+    "uart_cli": {
+      "stream": "debug"
+    },
+    "watchdog": {}
+  }
+}

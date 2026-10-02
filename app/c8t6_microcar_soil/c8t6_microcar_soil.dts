@@ -1,0 +1,390 @@
+/dts-v1/;
+
+/ {
+    model = "ARK CREW MicroCar Soil";
+    compatible = "c8t6_microcar_soil", "stm32f103c8";
+
+    sys {
+        compatible = "simple-bus";
+        #address-cells = <1>;
+        #size-cells = <1>;
+        ranges;
+
+        gpioa: gpioa {
+            compatible = "ark_hal_gpio";
+            reg = <0x40010800 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpioa";
+            status = "okay";
+        };
+
+        gpiob: gpiob {
+            compatible = "ark_hal_gpio";
+            reg = <0x40010c00 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpiob";
+            status = "okay";
+        };
+
+        gpioc: gpioc {
+            compatible = "ark_hal_gpio";
+            reg = <0x40011000 0x400>;
+            gpio-controller;
+            #gpio-cells = <2>;
+            ark,logical-id = "gpioc";
+            status = "okay";
+        };
+
+        timebase {
+            compatible = "ark_hal_time";
+            status = "okay";
+        };
+
+        adc1: adc1 {
+            compatible = "ark_hal_adc";
+            reg = <0x40012400 0x400>;
+            #io-channel-cells = <1>;
+            ark,logical-id = "adc1";
+            ark,cubemx-handle = "hadc1";
+            ark,cubemx-header = "adc.h";
+            status = "okay";
+
+            adc_sensor@4 {
+                compatible = "adc_sensor";
+                reg = <4>;
+                label = "mq7";
+                status = "okay";
+            };
+
+            adc_sensor@5 {
+                compatible = "adc_sensor";
+                reg = <5>;
+                label = "mq135";
+                status = "okay";
+            };
+
+            adc_sensor@9 {
+                compatible = "adc_sensor";
+                reg = <9>;
+                label = "soil";
+                status = "okay";
+            };
+        };
+
+        encoder1: encoder1 {
+            compatible = "ark_hal_encoder";
+            reg = <0x40000000 0x400>;
+            #ark,hal-cells = <0>;
+            ark,logical-id = "encoder1";
+            ark,cubemx-handle = "htim2";
+            ark,cubemx-header = "tim.h";
+            status = "okay";
+        };
+
+        encoder2: encoder2 {
+            compatible = "ark_hal_encoder";
+            reg = <0x40000800 0x400>;
+            #ark,hal-cells = <0>;
+            ark,logical-id = "encoder2";
+            ark,cubemx-handle = "htim4";
+            ark,cubemx-header = "tim.h";
+            status = "okay";
+        };
+
+        pwm1: pwm1 {
+            compatible = "ark_hal_pwm";
+            #pwm-cells = <0>;
+            ark,logical-id = "pwm1";
+            ark,cubemx-handle = "htim1";
+            ark,cubemx-header = "tim.h";
+            ark,channel = <1>;
+            status = "okay";
+        };
+
+        pwm2: pwm2 {
+            compatible = "ark_hal_pwm";
+            #pwm-cells = <0>;
+            ark,logical-id = "pwm2";
+            ark,cubemx-handle = "htim1";
+            ark,cubemx-header = "tim.h";
+            ark,channel = <4>;
+            status = "okay";
+        };
+
+        i2c1: i2c1 {
+            compatible = "ark_hal_i2c";
+            reg = <0x40005400 0x400>;
+            #address-cells = <1>;
+            #size-cells = <0>;
+            ark,logical-id = "i2c1";
+            ark,cubemx-handle = "hi2c1";
+            ark,cubemx-header = "i2c.h";
+            status = "okay";
+
+            oled@3c {
+                compatible = "oled";
+                reg = <0x3c>;
+                status = "okay";
+            };
+
+            bh1750@23 {
+                compatible = "bh1750";
+                reg = <0x23>;
+                status = "okay";
+            };
+        };
+
+        uart1: uart1 {
+            compatible = "ark_hal_uart";
+            reg = <0x40013800 0x400>;
+            ark,logical-id = "uart1";
+            ark,cubemx-handle = "huart1";
+            ark,cubemx-header = "usart.h";
+            status = "okay";
+
+            stream_bluetooth: stream {
+                compatible = "stream";
+                ark,stream-name = "bluetooth";
+                current-speed = <9600>;
+                status = "okay";
+
+                bluetooth {
+                    compatible = "bluetooth";
+                    status = "okay";
+                };
+            };
+        };
+
+        uart2: uart2 {
+            compatible = "ark_hal_uart";
+            reg = <0x40004400 0x400>;
+            ark,logical-id = "uart2";
+            ark,cubemx-handle = "huart2";
+            ark,cubemx-header = "usart.h";
+            status = "okay";
+
+            stream_maixcam: stream {
+                compatible = "stream";
+                ark,stream-name = "maixcam";
+                current-speed = <115200>;
+                status = "okay";
+
+                maixcam {
+                    compatible = "maixcam";
+                    status = "okay";
+                };
+            };
+        };
+
+        uart3: uart3 {
+            compatible = "ark_hal_uart";
+            reg = <0x40004800 0x400>;
+            ark,logical-id = "uart3";
+            ark,cubemx-handle = "huart3";
+            ark,cubemx-header = "usart.h";
+            status = "okay";
+
+            stream_beidou: stream {
+                compatible = "stream";
+                ark,stream-name = "beidou";
+                current-speed = <9600>;
+                status = "okay";
+
+                beidou {
+                    compatible = "beidou";
+                    status = "okay";
+                };
+            };
+        };
+
+        dht11 {
+            compatible = "dht11";
+            data-gpios = <&gpiob 5 0>;
+            status = "okay";
+        };
+
+        adc38_tracking {
+            compatible = "adc38_tracking";
+            io-channels = <&adc1 8>;
+            select-gpios = <&gpioc 13 0>, <&gpiob 3 0>, <&gpiob 4 0>;
+            status = "okay";
+        };
+
+        motor {
+            compatible = "motor";
+            status = "okay";
+
+            motor_tb6612 {
+                compatible = "motor_tb6612";
+                pwms = <&pwm1>, <&pwm2>;
+                left-in1-gpios = <&gpiob 13 0>;
+                left-in2-gpios = <&gpiob 12 0>;
+                right-in1-gpios = <&gpiob 14 0>;
+                right-in2-gpios = <&gpiob 15 0>;
+                ark,left-polarity = <1>;
+                ark,right-polarity = <1>;
+                status = "okay";
+            };
+        };
+
+        encoder {
+            compatible = "encoder";
+            encoders = <&encoder1>, <&encoder2>;
+            ark,left-polarity = <0xffffffff>;
+            ark,right-polarity = <1>;
+            ark,counts-per-revolution = <1500>;
+            status = "okay";
+        };
+
+        servo {
+            compatible = "servo";
+            ark,software-pwm;
+            data-gpios = <&gpioa 6 0>;
+            status = "okay";
+        };
+
+        ws2812b {
+            compatible = "ws2812b";
+            data-gpios = <&gpioa 7 0>;
+            ark,transport = "software";
+            chain-length = <8>;
+            status = "okay";
+        };
+
+        buzzer {
+            compatible = "buzzer";
+            gpios = <&gpioa 12 0>;
+            status = "okay";
+        };
+
+        flash {
+            compatible = "flash";
+            status = "okay";
+
+            internal_flash {
+                compatible = "flash_stm32f103";
+                ark,reserve-bytes = <1024>;
+                status = "okay";
+            };
+        };
+    };
+
+    software {
+        tasks {
+            ark,control-stack-words = <128>;
+            ark,sensor-stack-words = <160>;
+            ark,oled-stack-words = <160>;
+            ark,business-stack-words = <256>;
+            ark,control-priority = <2>;
+            ark,sensor-priority = <1>;
+            ark,oled-priority = <1>;
+            ark,business-priority = <2>;
+            ark,control-period-ms = <20>;
+            ark,sensor-period-ms = <200>;
+            ark,oled-period-ms = <100>;
+            ark,business-period-ms = <20>;
+            ark,oled-page-period-ms = <2000>;
+            ark,bluetooth-period-ms = <1000>;
+            status = "okay";
+        };
+
+        control {
+            compatible = "control";
+            ark,period-ms = <20>;
+            ark,left-pid = <0 350 60 0 0xfffffc18 1000 0xfffcf2c0 200000>;
+            ark,right-pid = <0 350 60 0 0xfffffc18 1000 0xfffcf2c0 200000>;
+            ark,smoothing-enabled;
+            ark,rise-step-rpm10 = <180>;
+            ark,fall-step-rpm10 = <300>;
+            ark,minimum-step-rpm10 = <10>;
+            status = "okay";
+        };
+
+        display {
+            ark,dirty-refresh = <0>;
+            status = "okay";
+        };
+
+        lighting {
+            ark,max-lux = <1500>;
+            ark,max-level = <7>;
+            ark,max-white = <88>;
+            status = "okay";
+        };
+
+        calibration {
+            ark,white = <2624 2172 3104 2016 1000 2043 1606 1476>;
+            ark,black = <89 84 87 92 101 85 93 89>;
+            ark,samples-per-channel = <2>;
+            ark,settle-us = <10>;
+            status = "okay";
+        };
+
+        line_follow {
+            ark,period-ms = <20>;
+            ark,base-speed-rpm10 = <1200>;
+            ark,turn-speed-rpm10 = <800>;
+            ark,flower-timeout-ms = <8000>;
+            ark,flower-max-attempts = <3>;
+            ark,flower-done-ms = <1000>;
+            ark,flower-blink-half-ms = <167>;
+            ark,return-timeout-ms = <8000>;
+            ark,target-corner-count = <4>;
+            ark,pre-turn-pause-ms = <300>;
+            ark,start-delay-ms = <1000>;
+            ark,ready-retry-ms = <1000>;
+            ark,strong-min = <1400>;
+            ark,corner-confirm-ticks = <3>;
+            ark,corner-release-ticks = <5>;
+            ark,corner-approach-distance = <1700>;
+            ark,lost-limit-ticks = <25>;
+            ark,turn-min-counts = <250>;
+            ark,turn-max-counts = <2500>;
+            ark,turn-center-limit = <350>;
+            ark,turn-reacquire-ticks = <3>;
+            ark,steering-pid = <0 100 0 0 0xfffffed4 300 0xfffcf2c0 200000>;
+            ark,middle-weights = <0xfffffc00 0xfffffd9a 0xffffff33 205 614 1024>;
+            status = "okay";
+        };
+
+        flower_tracking {
+            ark,target-x = <215>;
+            ark,target-y = <100>;
+            ark,x-deadband = <3>;
+            ark,y-deadband = <3>;
+            ark,x-hold-deadband = <3>;
+            ark,y-hold-deadband = <3>;
+            ark,x-gain-rpm10 = <4>;
+            ark,y-gain-rpm10 = <5>;
+            ark,linear-polarity = <1>;
+            ark,steer-polarity = <0xffffffff>;
+            ark,min-speed-rpm10 = <180>;
+            ark,max-linear-rpm10 = <500>;
+            ark,max-steer-rpm10 = <450>;
+            ark,max-wheel-rpm10 = <700>;
+            ark,search-speed-rpm10 = <220>;
+            ark,search-polarity = <1>;
+            ark,search-delay-ms = <300>;
+            ark,frame-stale-ms = <250>;
+            ark,detect-confirm-frames = <3>;
+            ark,missed-frame-tolerance = <3>;
+            ark,stable-frames = <5>;
+            status = "okay";
+        };
+
+        soil_probe {
+            ark,insert-delta-deg = <65>;
+            ark,direction = <1>;
+            ark,move-settle-ms = <300>;
+            ark,hold-ms = <2000>;
+            ark,sample-timeout-ms = <300>;
+            ark,alarm-ms = <3000>;
+            ark,baseline-sample-count = <8>;
+            ark,insert-drop-raw = <200>;
+            ark,baseline-filter-shift = <3>;
+            status = "okay";
+        };
+    };
+};

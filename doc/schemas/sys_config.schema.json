@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "sys_config.schema.json",
+  "title": "ARK CREW SDK system configuration",
+  "type": "object",
+  "required": ["schema_version", "app", "hal", "components"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "app": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$"},
+    "application": {"type": "object"},
+    "hal": {"type": "object"},
+    "components": {"type": "object"}
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,119 @@
+{
+  "$schema": "../../doc/schemas/sys_config.schema.json",
+  "schema_version": 1,
+  "app": "dual_display",
+
+  // App状态灯编号，对应components.led.instances中的id。
+  "application": {
+    "status_led_id": 0
+  },
+
+  // HAL只建立SDK外设编号到CubeMX句柄的映射，外设仍由CubeMX初始化。
+  "hal": {
+    // GPIO驱动没有CubeMX句柄，空对象表示启用GPIO HAL。
+    "gpio": {},
+
+    "i2c": {
+      "instances": [
+        // OLED使用I2C1。
+        {
+          "id": "i2c1",
+          "handle": "hi2c1",
+          "header": "i2c.h"
+        }
+      ]
+    },
+
+    "spi": {
+      "instances": [
+        // ST7789 LCD使用SPI1；启用SPI2时可在数组中继续添加一项。
+        {
+          "id": "spi1",
+          "handle": "hspi1",
+          "header": "spi.h"
+        }
+      ]
+    },
+
+    "uart": {
+      "instances": [
+        // 调试CLI使用USART1。
+        {
+          "id": "uart1",
+          "handle": "huart1",
+          "header": "usart.h"
+        }
+      ]
+    },
+
+    // Watchdog HAL使用CubeMX生成的IWDG句柄。
+    "watchdog": {
+      "handle": "hiwdg",
+      "header": "iwdg.h"
+    }
+  },
+
+  "components": {
+    // ST7789硬件映射；显示时序、超时和复位延时由LCD组件维护。
+    "lcd": {
+      "spi": "spi1",
+
+      // 背光控制，PA1高电平打开背光。
+      "BL": {
+        "pin": "PA1",
+        "active_level": 1
+      },
+
+      // 片选信号，PA2低电平选中LCD。
+      "CS": {
+        "pin": "PA2",
+        "active_level": 0
+      },
+
+      // 数据/命令选择，PA3高电平表示数据。
+      "DC": {
+        "pin": "PA3",
+        "active_level": 1
+      },
+
+      // 硬件复位，PA4低电平复位LCD。
+      "RST": {
+        "pin": "PA4",
+        "active_level": 0
+      }
+    },
+
+    // LED逻辑id供App引用；active_level表示点亮LED时的GPIO电平。
+    "led": {
+      "instances": [
+        // 板载状态LED，PC13低电平点亮。
+        {
+          "id": 0,
+          "gpio": {
+            "pin": "PC13",
+            "active_level": 0
+          }
+        }
+      ]
+    },
+
+    // SH1106地址、列偏移和传输时序由OLED组件维护。
+    "oled": {
+      "i2c": "i2c1"
+    },
+
+    // 刷新周期和任务栈为Watchdog组件通用常量。
+    "watchdog": {},
+
+    // 波特率必须与CubeMX配置一致；DMA缓冲区和任务栈由CLI组件维护。
+    // 调试字节流当前使用USART1；后续USB后端保持相同ark_stream接口。
+    "stream": {
+      "name": "debug",
+      "uart": "uart1",
+      "baud_rate": 921600
+    },
+    "uart_cli": {
+      "stream": "debug"
+    }
+  }
+}

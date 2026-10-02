@@ -1,0 +1,4 @@
+interface:
+  display_name: "ARK CREW Embedded SDK"
+  short_description: "Develop and maintain the layered ARK CREW embedded SDK"
+  default_prompt: "Use $ark-embedded-sdk to implement an embedded feature in this repository while preserving the CubeMX-generated code boundary."

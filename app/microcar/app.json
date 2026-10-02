@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "app": "microcar",
+  "platform": "stm32f1",
+  "hal": [
+    "gpio",
+    "can",
+    "i2c",
+    "pwm",
+    "spi",
+    "uart",
+    "watchdog"
+  ],
+  "components": [
+    "icm20602",
+    "led",
+    "motor",
+    "oled",
+    "stream",
+    "uart_cli",
+    "watchdog"
+    ,"flash"
+    ,"ws2812b"
+  ],
+  "keil": {
+    "project": "../../../ark_stm32_projects/c8t6_demo/MDK-ARM/c8t6_demo.uvprojx",
+    "target": "c8t6_demo",
+    "sdk_link": "../../ark_sdk",
+    "device": "STM32F103C8",
+    "reset_and_run": true
+  }
+}

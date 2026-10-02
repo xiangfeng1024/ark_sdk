@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ARK CREW SDK application configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "app", "platform", "hal", "components", "keil"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "app": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "platform": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "hal": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" }
+    },
+    "components": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" }
+    },
+    "keil": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["project", "target", "sdk_link", "device", "reset_and_run"],
+      "properties": {
+        "project": { "type": "string", "minLength": 1 },
+        "target": { "type": "string", "minLength": 1 },
+        "sdk_link": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?![A-Za-z]:)(?![/\\\\]).+",
+          "description": "Path from the Cube project root to the SDK; use forward slashes and prefer a relative path."
+        },
+        "device": { "enum": ["GD32F103C8", "STM32F103C8"] },
+        "reset_and_run": { "type": "boolean" }
+      }
+    }
+  }
+}

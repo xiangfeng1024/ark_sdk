@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "keil.build.incremental",
+  "title": "增量编译",
+  "description": "仅编译发生变化的文件，并校验0错误和AXF产物。",
+  "category": "构建",
+  "icon": "Hammer",
+  "order": 50,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {"kind": "builtin", "handler": "build_incremental"},
+  "check": {"handler": "keil_synced", "timeout_ms": 5000},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": ["build_output"],
+  "resources": ["keil:${project}"],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": true
+}

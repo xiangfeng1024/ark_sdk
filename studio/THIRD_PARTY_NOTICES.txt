@@ -1,0 +1,33 @@
+ARK CREW Studio third-party notices
+===================================
+
+Qt for Python / PySide6 and Shiboken6
+-------------------------------------
+Copyright (C) The Qt Company Ltd. and other contributors.
+The open-source distribution is available under LGPL-3.0-only, GPL-2.0-only,
+or GPL-3.0-only. This package uses the dynamically linked Qt libraries shipped
+by the official PySide6 wheel. License texts are included in the licenses
+directory. Source and license information: https://www.qt.io/licensing/
+
+PyInstaller
+-----------
+Copyright (c) PyInstaller Development Team.
+Licensed under GPL-2.0-or-later with the PyInstaller bootloader exception.
+The exception permits distributing the generated application under the
+application's own license. https://pyinstaller.org/
+
+Lucide Icons
+------------
+Copyright (c) 2020-present Lucide Contributors.
+Licensed under the ISC License. https://lucide.dev/
+
+pyserial
+--------
+Copyright (c) Chris Liechti and contributors.
+Licensed under the BSD 3-Clause License. https://pyserial.readthedocs.io/
+
+Noto Sans SC
+------------
+Copyright 2014-2021 Adobe, with Reserved Font Name "Source".
+Licensed under the SIL Open Font License, Version 1.1. The complete license
+is included in licenses/OFL-1.1.txt.

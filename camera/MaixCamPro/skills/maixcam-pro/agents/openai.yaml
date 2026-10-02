@@ -1,0 +1,4 @@
+interface:
+  display_name: "MaixCam Pro"
+  short_description: "Develop MaixPy vision and UART integration"
+  default_prompt: "Use $maixcam-pro to update the MaixCam Pro vision pipeline and STM32 protocol safely."

@@ -1,0 +1,71 @@
+{
+  "$schema": "../../doc/schemas/sys_config.schema.json",
+  "schema_version": 1,
+  "app": "cube3d",
+
+  // App状态灯编号，对应components.led.instances中的id。
+  "application": {
+    "status_led_id": 0
+  },
+
+  // HAL只建立SDK外设编号到CubeMX句柄的映射，外设仍由CubeMX初始化。
+  "hal": {
+    "gpio": {},
+    "i2c": {
+      "instances": [
+        // OLED使用I2C1。
+        {
+          "id": "i2c1",
+          "handle": "hi2c1",
+          "header": "i2c.h"
+        }
+      ]
+    },
+    "uart": {
+      "instances": [
+        // 调试CLI使用USART1。
+        {
+          "id": "uart1",
+          "handle": "huart1",
+          "header": "usart.h"
+        }
+      ]
+    },
+    // Watchdog HAL使用CubeMX生成的IWDG句柄。
+    "watchdog": {
+      "handle": "hiwdg",
+      "header": "iwdg.h"
+    }
+  },
+
+  "components": {
+    // LED自检时序由组件维护；PC13低电平点亮。
+    "led": {
+      "instances": [
+        {
+          "id": 0,
+          "gpio": {
+            "pin": "PC13",
+            "active_level": 0
+          }
+        }
+      ]
+    },
+    // SH1106地址、列偏移和传输时序由OLED组件维护。
+    "oled": {
+      "i2c": "i2c1"
+    },
+    // 刷新周期和任务栈为Watchdog组件通用常量。
+    "watchdog": {},
+    // 波特率必须与CubeMX配置一致。
+    // 调试字节流当前使用USART1；后续USB后端保持相同ark_stream接口。
+    "stream": {
+      "name": "debug",
+      "uart": "uart1",
+      "baud_rate": 921600
+    },
+    "uart_cli": {
+      "stream": "debug"
+    }
+  }
+}

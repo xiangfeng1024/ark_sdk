@@ -1,0 +1,18 @@
+# Generated dependencies, caches and release output
+tmp/
+temp/
+*.tmp
+*.temp
+.pytest_cache/
+__pycache__/
+*.py[cod]
+node_modules/
+.vite-temp/
+dist/
+out/
+build/
+log/
+*.log
+.env
+.env.*
+!.env.example

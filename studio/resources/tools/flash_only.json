@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "id": "keil.flash.only",
+  "title": "烧录现有固件",
+  "description": "不重新编译，直接烧录当前Keil target已有的AXF并校验运行。",
+  "category": "烧录",
+  "icon": "Download",
+  "order": 75,
+  "availability": "active",
+  "parameter_mode": "fixed",
+  "entrypoint": {"kind": "builtin", "handler": "flash_only"},
+  "check": {"handler": "keil_built_probe", "timeout_ms": 4000},
+  "progress": {"mode": "event"},
+  "inputs": [
+    {"name": "probe", "label": "下载探针", "type": "probe", "default": "dap", "options": ["dap", "stlink"], "required": true}
+  ],
+  "validators": ["flash_complete"],
+  "resources": ["keil:${project}", "probe:${probe}"],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": true
+}

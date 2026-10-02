@@ -1,0 +1,74 @@
+{
+  "components": [
+    {"name": "adc38_tracking", "sources": ["adc38_tracking/adc38_tracking.c"], "hal": ["adc", "gpio", "time"]},
+    {"name": "adc_sensor", "sources": ["adc_sensor/adc_sensor.c"], "hal": ["adc"]},
+    {"name": "beidou", "sources": ["beidou/beidou.c"], "hal": []},
+    {"name": "bh1750", "sources": ["bh1750/bh1750.c"], "hal": ["i2c"]},
+    {"name": "buzzer", "sources": ["buzzer/buzzer.c"], "hal": ["gpio"]},
+    {"name": "bluetooth", "sources": ["bluetooth/bluetooth.c"], "hal": []},
+    {
+      "name": "control",
+      "sources": ["control/control.c", "control/control_pid.c", "control/control_line_tracking.c"],
+      "requires": ["encoder", "motor"],
+      "hal": []
+    },
+    {"name": "dht11", "sources": ["dht11/dht11.c"], "hal": ["gpio", "time"]},
+    {"name": "flash", "sources": ["flash/flash.c"], "hal": []},
+    {
+      "name": "flash_stm32f103",
+      "directory": "flash",
+      "sources": ["flash/flash_stm32f103.c"],
+      "requires": ["flash"],
+      "hal": []
+    },
+    {
+      "name": "flash_w25q16",
+      "directory": "flash",
+      "sources": ["flash/flash_w25q16.c"],
+      "requires": ["flash"],
+      "hal": ["gpio", "spi"]
+    },
+    {"name": "icm20602", "sources": ["icm20602/icm20602.c"], "hal": ["gpio", "i2c"]},
+    {"name": "json", "sources": ["json/json.c", "json/cJSON.c"], "hal": []},
+    {"name": "lcd", "sources": ["lcd/lcd.c", "lcd/st7789.c"], "hal": ["gpio", "spi"]},
+    {"name": "maixcam", "sources": ["maixcam/maixcam.c"], "hal": []},
+    {"name": "led", "sources": ["led/led.c"], "hal": ["gpio"]},
+    {"name": "encoder", "sources": ["encoder/encoder.c"], "hal": ["encoder"]},
+    {"name": "motor", "sources": ["motor/motor.c"], "hal": []},
+    {
+      "name": "motor_tb6612",
+      "directory": "motor",
+      "sources": ["motor/motor_tb6612.c"],
+      "requires": ["motor"],
+      "hal": ["gpio", "pwm"]
+    },
+    {
+      "name": "motor_can",
+      "directory": "motor",
+      "sources": ["motor/motor_can.c"],
+      "requires": ["motor"],
+      "hal": ["can"]
+    },
+    {"name": "servo", "sources": ["servo/servo.c"], "hal": ["gpio", "pwm", "time"]},
+    {"name": "oled", "sources": ["oled/oled.c", "oled/ssd1306.c"], "hal": ["i2c"]},
+    {"name": "wifi", "sources": ["wifi/wifi.c"], "hal": []},
+    {
+      "name": "wifi_esp_at",
+      "directory": "wifi",
+      "sources": ["wifi/wifi_esp_at.c"],
+      "requires": ["wifi", "stream"],
+      "hal": []
+    },
+    {
+      "name": "ark_net",
+      "sources": ["ark_net/ark_net.c", "ark_net/ark_net_protocol.c"],
+      "requires": ["wifi", "json"],
+      "hal": []
+    },
+    {"name": "stream", "sources": ["stream/stream.c"], "hal": ["uart"]},
+    {"name": "uart_cli", "sources": ["uart_cli/uart_cli.c"], "hal": []},
+    {"name": "usb", "sources": ["usb/usb.c"], "hal": ["usb_device"]},
+    {"name": "watchdog", "sources": ["watchdog/watchdog.c"], "hal": ["watchdog"]},
+    {"name": "ws2812b", "sources": ["ws2812b/ws2812b.c"], "hal": ["gpio", "pwm", "time"]}
+  ]
+}

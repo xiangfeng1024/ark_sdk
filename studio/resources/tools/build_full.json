@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "keil.build.full",
+  "title": "全量编译",
+  "description": "重新编译整个Keil target并分析固件空间。",
+  "category": "构建",
+  "icon": "Blocks",
+  "order": 60,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {"kind": "builtin", "handler": "build_full"},
+  "check": {"handler": "keil_synced", "timeout_ms": 5000},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": ["build_output"],
+  "resources": ["keil:${project}"],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": true
+}

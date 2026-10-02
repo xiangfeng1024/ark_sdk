@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "id": "sdk.encoding.convert",
+  "title": "字符编码转换",
+  "description": "选择一个源码目录，扫描并直接在UTF-8和GB2312之间转换，同时保留本机备份。",
+  "category": "维护",
+  "icon": "Languages",
+  "order": 250,
+  "availability": "active",
+  "parameter_mode": "dynamic",
+  "entrypoint": {
+    "kind": "builtin",
+    "handler": "encoding_convert",
+    "args": ["--root", "${param.folder}", "--target", "${param.target}"]
+  },
+  "check": {"handler": "encoding_convert", "timeout_ms": 2000},
+  "progress": {"mode": "event"},
+  "inputs": [
+    {
+      "name": "folder",
+      "label": "源码文件夹",
+      "type": "directory",
+      "required": true,
+      "default": "${workspace}",
+      "remember": true,
+      "description": "选择需要递归扫描和转换的文件夹。"
+    },
+    {
+      "name": "target",
+      "label": "目标编码",
+      "type": "enum",
+      "required": true,
+      "default": "UTF-8",
+      "options": ["UTF-8", "GB2312"],
+      "remember": true
+    }
+  ],
+  "validators": [],
+  "resources": ["encoding:${workspace}"],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": false
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "project.components",
+  "title": "打开DTS配置",
+  "description": "检查当前App DTS和中央组件/HAL目录，然后使用VS Code打开配置。",
+  "category": "项目",
+  "icon": "SlidersHorizontal",
+  "order": 210,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {
+    "kind": "builtin",
+    "handler": "dts_editor",
+    "args": ["--config", "${app_config}", "--open"]
+  },
+  "check": {"handler": "dts_editor", "timeout_ms": 1500},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": [],
+  "resources": [],
+  "danger": "safe",
+  "cancellable": false,
+  "quick": false
+}

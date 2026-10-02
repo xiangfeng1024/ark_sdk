@@ -1,0 +1,54 @@
+{
+  "$schema": "../../doc/schemas/sys_config.schema.json",
+  "schema_version": 1,
+  "app": "usb_debug",
+
+  // App状态灯使用LED组件中id为0的实例。
+  "application": {
+    "status_led_id": 0
+  },
+
+  // 外设本身仍由CubeMX初始化；这里只把SDK接口绑定到生成的句柄。
+  "hal": {
+    "gpio": {},
+
+    // CubeMX启用USB Device/CDC后会在usb_device.h中导出hUsbDeviceFS。
+    "usb_device": {
+      "handle": "hUsbDeviceFS",
+      "header": "usb_device.h"
+    },
+
+    // reset命令通过停止刷新IWDG完成软件复位。
+    "watchdog": {
+      "handle": "hiwdg",
+      "header": "iwdg.h"
+    }
+  },
+
+  "components": {
+    // Blue Pill板载PC13 LED通常为低电平点亮。
+    "led": {
+      "instances": [
+        {
+          "id": 0,
+          "gpio": {
+            "pin": "PC13",
+            "active_level": 0
+          }
+        }
+      ]
+    },
+
+    // USB CDC注册为名为debug的通用字节流。
+    "usb": {
+      "name": "debug"
+    },
+
+    // CLI只依赖流名称，不感知底层是UART还是USB CDC。
+    "uart_cli": {
+      "stream": "debug"
+    },
+
+    "watchdog": {}
+  }
+}

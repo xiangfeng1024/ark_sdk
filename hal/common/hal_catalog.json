@@ -1,0 +1,160 @@
+{
+  "platforms": [
+    {
+      "name": "stm32f1",
+      "roots": [
+        {
+          "compatible": "stm32f103c8",
+          "device": "STM32F103C8",
+          "project_prefix": "c8t6"
+        },
+        {
+          "compatible": "gd32f103c8",
+          "device": "GD32F103C8",
+          "project_prefix": "c8t6"
+        }
+      ],
+      "drivers": [
+        {
+          "name": "adc",
+          "compatible": "ark_hal_adc",
+          "sources": [
+            "stm32f1/src/ark_hal_adc.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_ADC_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "can",
+          "compatible": "ark_hal_can",
+          "sources": [
+            "stm32f1/src/ark_hal_can.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_CAN_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "encoder",
+          "compatible": "ark_hal_encoder",
+          "sources": [
+            "stm32f1/src/ark_hal_encoder.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_TIM_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "gpio",
+          "compatible": "ark_hal_gpio",
+          "sources": [
+            "stm32f1/src/ark_hal_gpio.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": []
+        },
+        {
+          "name": "i2c",
+          "compatible": "ark_hal_i2c",
+          "sources": [
+            "stm32f1/src/ark_hal_i2c.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_I2C_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "pwm",
+          "compatible": "ark_hal_pwm",
+          "sources": [
+            "stm32f1/src/ark_hal_pwm.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_TIM_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "soft_i2c",
+          "sources": [
+            "stm32f1/src/ark_hal_soft_i2c.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": []
+        },
+        {
+          "name": "spi",
+          "compatible": "ark_hal_spi",
+          "sources": [
+            "stm32f1/src/ark_hal_spi.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": []
+        },
+        {
+          "name": "time",
+          "compatible": "ark_hal_time",
+          "sources": [
+            "stm32f1/src/ark_hal_time.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": []
+        },
+        {
+          "name": "uart",
+          "compatible": "ark_hal_uart",
+          "sources": [
+            "stm32f1/src/ark_hal_uart.c",
+            "src/ark_uart_manage.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_UART_MODULE_ENABLED"
+          ]
+        },
+        {
+          "name": "usb_device",
+          "compatible": "ark_hal_usb_device",
+          "sources": [
+            "stm32f1/src/ark_hal_usb_device.c"
+          ],
+          "project_sources": [],
+          "defines": [
+            "ARK_USB_DEVICE_CUBEMX_INIT"
+          ],
+          "managed_defines": [
+            "HAL_PCD_MODULE_ENABLED",
+            "ARK_USB_DEVICE_CUBEMX_INIT"
+          ]
+        },
+        {
+          "name": "watchdog",
+          "compatible": "ark_hal_watchdog",
+          "sources": [
+            "stm32f1/src/ark_hal_watchdog.c"
+          ],
+          "project_sources": [],
+          "defines": [],
+          "managed_defines": [
+            "HAL_IWDG_MODULE_ENABLED"
+          ]
+        }
+      ]
+    }
+  ]
+}

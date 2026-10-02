@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "dts.generate",
+  "title": "生成DTS",
+  "description": "校验DTS并生成当前App参与固件编译的只读OF数据。",
+  "category": "配置",
+  "icon": "FileCog",
+  "order": 30,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {"kind": "builtin", "handler": "dts_generate"},
+  "check": {"handler": "dts_config", "timeout_ms": 5000},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": ["dts_current"],
+  "resources": ["keil:${project}"],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": false
+}

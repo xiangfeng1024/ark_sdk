@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "app": "usb_debug",
+  "platform": "stm32f1",
+  "hal": [
+    "gpio",
+    "usb_device",
+    "watchdog"
+  ],
+  "components": [
+    "led",
+    "usb",
+    "watchdog",
+    "uart_cli"
+  ],
+  "keil": {
+    "project": "../../../ark_stm32_projects/c8t6_usb_cdc/MDK-ARM/c8t6_usb_cdc.uvprojx",
+    "target": "c8t6_usb_cdc",
+    "sdk_link": "../../ark_sdk",
+    "device": "STM32F103C8",
+    "reset_and_run": true
+  }
+}

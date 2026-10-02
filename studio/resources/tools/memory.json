@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "id": "analysis.memory",
+  "title": "内存分析",
+  "description": "读取当前Keil MAP，按App、组件、HAL、OS和目标文件分析Flash与SRAM。",
+  "category": "分析",
+  "icon": "ChartNoAxesCombined",
+  "order": 230,
+  "availability": "active",
+  "parameter_mode": "none",
+  "entrypoint": {
+    "kind": "builtin",
+    "handler": "memory_analyzer",
+    "args": ["--config", "${app_config}", "--text"]
+  },
+  "check": {"handler": "memory_report", "timeout_ms": 2000},
+  "progress": {"mode": "event"},
+  "inputs": [],
+  "validators": [],
+  "resources": [],
+  "danger": "safe",
+  "cancellable": true,
+  "quick": false
+}
