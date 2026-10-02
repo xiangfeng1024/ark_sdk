@@ -1,33 +1,12 @@
 ---
 name: studio
-description: 开发、调试和测试ARK CREW PySide6 Studio，包括主窗口、工具覆盖层、Brain协议、任务日志、串口、产物、设置、字体、图标和EXE打包。
+description: 开发独立 Rust 方舟 Studio 的 React 界面、资源组合、任务日志、串口和便携发布。
 ---
 
-# ARK CREW Studio
+# 方舟 Studio
 
-开始前阅读`../../AGENT.md`、`../../doc/studio_tooling.md`、`../../studio/docs/ARCHITECTURE.md`和`../../studio/docs/DESIGN.md`。Python工具链规则见`../tooling/SKILL.md`。
+界面和宿主在独立私有仓库，同级路径 `../../../ark_stdio_rust/`。先读该仓库 AGENTS.md、DESIGN.md 和 tools/sdk/README.md；SDK 工具规则见 `../tooling/SKILL.md`。
 
-## 架构
+资源选择、本机组合、兼容提示属于 Studio；工具只使用显式参数与任务快照。React 不直接调用系统命令，Rust 宿主运行后台工具并隐藏外部进程。保留蓝色主题、中文离线字体、卡片、IconAction 与工作台监控台。
 
-- Studio仅使用PySide6 Qt Widgets，源码包为`studio`。
-- `BrainClient`通过QProcess启动`python -m studio --brain-worker`，冻结后启动同一EXE的`--brain-worker`模式。
-- JSONL协议固定为UTF-8和版本2；stdout只能输出协议数据。
-- 工具来自`studio/resources/tools/*.json`，工具实现从`studio.tooling`直接import。
-- 后台外部程序必须使用隐藏进程参数；用户主动打开的编辑器和资源管理器可以显示。
-
-## UI规则
-
-- 默认1440×900，最小1080×680；监控日志默认展开。
-- 中文字体使用内置Noto Sans SC；窗口、任务栏和托盘使用标准ARK CREW图标。
-- 工具参数和危险确认使用主窗口内覆盖层，不创建顶层QDialog。
-- 工具列表、参数、禁用原因和资源锁必须来自清单和Brain，不在界面复制业务配置。
-
-## 验证
-
-```powershell
-python -m pytest studio/tests -q
-python -m studio --check --workspace .
-python -m studio --build
-```
-
-检查冻结版UTF-8中文、双击启动、隐藏控制台、1440×900和1080×680截图、窗口图标、串口测试模式及退出清理。真实串口、Keil和探针结果必须如实记录。
+验证前端、Rust、界面截图和真实桌面启动/退出。发布脚本只构建便携版，通过检查后把 EXE、CLI 和运行库复制到项目根目录；不提交产物。SDK 内的旧 Rust/React 实现已经移出正式源码。

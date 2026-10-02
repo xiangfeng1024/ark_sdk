@@ -1,52 +1,30 @@
-# ARK CREW SDK 项目级 Agent 指南
+# ARK CREW SDK 项目开发规则
 
-本文件是 `ark_sdk` 的项目级规则入口。处理本仓库任务时先阅读本文件，再按任务类型读取对应 skill；文档不能覆盖当前源码、DTS、catalog 或测试的事实。
+## 路由
 
-## 快速路由
+HAL、驱动、CubeMX 绑定先读 skills/hal/SKILL.md；组件、DTS 与设备先读 skills/component/SKILL.md；开发工具先读 skills/tooling/SKILL.md；桌面界面先读 skills/studio/SKILL.md；App 业务先读 skills/app/SKILL.md；MaixCamPro 先读 skills/camera/SKILL.md。设备 Web 服务位于独立 ark_web 仓库，当前为空。跨层任务读取涉及的全部规则。
 
-| 任务 | 必读 skill | 事实来源 |
-|---|---|---|
-| HAL、驱动、DMA、IRQ、CubeMX 绑定 | `skills/hal/SKILL.md` | `doc/current_architecture.md`、`hal/include/`、`hal/common/hal_catalog.json` |
-| 组件、DTS OF、传感器、执行器、显示、协议 | `skills/component/SKILL.md` | `component/common/component_catalog.json`、组件头文件、对应 App DTS |
-| Python 脚本、DTS/Keil、工具清单、Brain | `skills/tooling/SKILL.md` | `doc/studio_tooling.md`、`studio/resources/schemas/tool.schema.json`、`studio/resources/tools/` |
-| PySide6 Studio、UI、IPC、日志 | `skills/studio/SKILL.md` | `studio/docs/ARCHITECTURE.md`、`studio/docs/TOOL_PLUGINS.md` |
-| App、FreeRTOS 任务、业务状态机 | `skills/app/SKILL.md` | `doc/current_architecture.md`、`app/<name>/`、`PROJECT_REQUIREMENTS.md` |
-| MaixCamPro、花盆视觉、相机串口协议 | `skills/camera/SKILL.md` | `camera/MaixCamPro/`、`camera/MaixCamPro/flower_pots/protocol.md` |
-| 设备 Web 服务（独立仓库，当前为空） | `skills/web/SKILL.md` | 同级 `ark_web/`；当前 SDK 不包含 Web 服务实现 |
+## 架构
 
-跨层任务同时读取所有涉及的 skill。例如“新增带 BH1750 的 I2C 组件”必须同时读取 component 和 hal；“新增 Studio 工具”必须读取 studio 和 tooling。
+- App DTS 是业务与设备配置源，禁用节点不参与生成和选型。新建 App 保持 App、DTS、IOC、工程和 Target 同名；既有资源可由 Studio 独立组合，执行时验证芯片及 catalog 兼容性，不隐式绑定同名工程。
+- CubeMX 生成的 Core、Drivers、Middlewares C/H 不得手改。ark_dts_generated.c/.h 必须由独立 Rust DTS 工具生成。
+- 层级方向是 App → OF/组件 → ark_hal → 平台适配 → 厂商 HAL。
+- HAL 与组件的构建选型仅来自各自 catalog；component/common/*.c 始终纳入。
+- 工具位于独立 Rust Studio 仓库，当前 SDK 不包含 Python Studio。工具接收明确参数，GUI 与 CLI 共用实现，不依赖本机组合配置。
+- 成功必须验证日志或产物；只看进程退出码不够。
 
-## 不可违反的架构规则
+## 使用与验证
 
-- `app/<name>/<name>.dts` 是 App 唯一配置源；`status` 缺省或 `okay` 表示启用，`disabled` 节点不得生成、注册或同步到 Keil。
-- App、DTS、CubeMX 目录、IOC、Keil 工程和 Target 使用同一个 `<board_prefix>_<product>` 名称。
-- CubeMX 生成的 `Core`、`Drivers`、`Middlewares` C/H 只读；不得手改 `ark_dts_generated.c/.h`，使用 `ark_dts.py` 生成。
-- 分层方向保持为 App -> 生成 OF/组件 -> `ark_hal_*` -> 平台适配 -> 厂商 HAL。
-- 组件/HAL 构建选择分别只来自 `component/common/component_catalog.json` 与 `hal/common/hal_catalog.json`；公共 `component/common/*.c` 按架构始终纳入。
-- Studio 是推荐入口，任务成功必须经过产物或日志后置校验，不能只看进程退出码。
-
-## 常用命令
+阅读 doc/studio_tooling.md。DTS 校验不需要工程和 Keil，普通工程编译不需要 SDK/App。构建、烧录、清理、克隆和打包通过明确目标执行；开发测试使用隔离副本，真实硬件结果单独记录。
 
 ```powershell
-python -m studio --check --workspace .
-python -m studio --workspace .
-python -m studio.cli dts app/c8t6_microcar_soil --check
-python -m studio.cli dts app/c8t6_microcar_soil
-python -m studio.cli configure app/c8t6_microcar_soil/c8t6_microcar_soil.dts
-python -m pytest studio/tests -q
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe dts.generate --input doc/examples/dts-参数.json
+cargo test --manifest-path ../ark_stdio_rust/tools/sdk/Cargo.toml
 ```
 
-优先使用 `python -m studio --workspace .` 启动Studio；CI和自动化通过`python -m studio.cli`调用同一套可导入工具。编译、烧录、清理、克隆和打包属于有副作用操作，执行前必须确认目标工程、探针和输出路径。
+文档或技能变更后，验证全部技能、Markdown 引用、JSON、工具路由和源码行为，由独立 agent 复核；发现问题修正后重复相关验证。Windows 验证显式使用 UTF-8。
 
-## 变更与验证
+## GitHub
 
-修改前先检查实际源码、DTS、catalog 和测试。文档或 skill 变更后：
-
-1. 对每个 skill 运行 `python -X utf8 C:\Users\zhous\.codex\skills\.system\skill-creator\scripts\quick_validate.py <skill-dir>`；Windows 中文环境显式使用 UTF-8。
-2. 检查引用路径、命令和 JSON 清单。
-3. 运行脚本测试及只读 SDK/Studio 检查。
-4. 由独立 agent 用真实 HAL、组件、脚本、Studio 和跨层请求验证路由与内容；发现问题只做最小修订并重复验证。
-
-## GitHub 提交流程
-
-此源码仓库在 GitHub 维护，旧 Gitea 历史不导入。首次源码发布使用 main，后续功能修订通过特性分支和 Pull Request。保留原有提交格式与 .githooks/commit-msg，按 README 配置 core.hooksPath。不提交凭据、日志或发布程序，不强推。
+提交说明、PR 和自有帮助文档使用中文 UTF-8，保留许可证和标准字段。后续开发使用特性分支及 PR。保留 .githooks/commit-msg 的 Change-Id。禁止提交凭据、日志、缓存和发布程序。历史仅在用户明确要求时重写，先备份，记录远程提交并使用带明确旧提交编号的 force-with-lease。

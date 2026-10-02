@@ -1,34 +1,11 @@
-# Source publication verification — 2026-10-02
+# 源码与工具迁移验证
 
-Source verification used a clean copy exported from each new Git index, without existing build output, Python caches, logs or links. The SDK and STM32 repositories were placed as siblings. Old Gitea commits and remotes are not part of either new repository.
+验证日期：2026-10-02。SDK 公开发布时重新建立 Git 历史，旧 Gitea 历史保存在仓库外。doc 与 information 合并为 doc，密码使用占位值，日志、构建缓存和软链接不提交。
 
-| Check | Result |
-|---|---|
-| SDK Studio tests on clean source | 100 passed |
-| Studio prerequisite check | Passed |
-| Skill structural validation | All 9 passed |
-| Independent HAL/component/tooling/Studio routing review | Passed after correcting stale Web/source/field references |
-| Markdown links and JSON schemas | Valid |
-| Both maintained DTS generated-output checks | Current |
-| Keil project source FilePath checks | All four projects resolve every referenced source file |
-| Git index symbolic links | None in either repository |
-| Recognized credential-signature scan | No matches; not a comprehensive security audit |
+开发工具已改写为 Rust，位于独立 Studio 仓库。两个维护 App 的 OF 生成数据与 Python 基线相同，仅生成标记改为中文。无工程依赖的 DTS 生成、独立工程编译、Target 隔离、创建、克隆、路径检查、编码转换及打包边界已验证。
 
-## Actual firmware rebuild results
+网络工程在干净副本使用实际 Keil 完整构建通过；独立包只包含所选 App 与依赖，经过完整构建、自包含路径检查后发布。土壤车原有 Flash 超限与历史 demo/USB 的 DTS/API 迁移问题保留，未扩大芯片容量。
 
-Rebuilds used installed Keil ARMCC 5.06 update 5 on the clean source copy; no device was flashed.
+Rust、前端与 UI 检查通过，便携 EXE 的真实工具服务、自检、串口枚举、GCC DLL、启动和正常关闭通过。真实烧录与硬件串口通信未测试。旧 Python Studio 先备份再移出源码，保留原授权。
 
-| Board project | Result |
-|---|---|
-| c8t6_xiaoyan_net (SDK App c8t6_ark_net) | Passed, zero errors/warnings; Code 45324, RO-data 2684, RW-data 476, ZI-data 19596 bytes; HEX produced |
-| c8t6_microcar_soil | Source compilation completed; link fails because sections exceed the configured Flash region (L6406E/L6407E) |
-| c8t6_demo | Legacy JSON-based App has not been migrated to the current DTS-generated API; build fails with missing ark_dts_generated.h and obsolete configuration interfaces |
-| c8t6_usb_cdc | Legacy JSON-based App has not been migrated to the current DTS-generated API; build fails with missing ark_dts_generated.h and obsolete configuration interfaces |
-
-The three failing firmware builds are explicitly retained as current limitations, not reported as successful. This source-publication change does not enlarge declared chip Flash or redesign legacy Apps. The maintained network firmware builds successfully; the SDK's automated tooling tests all pass. Actual board behavior and serial/network communication on hardware were not tested.
-
-## Publication preparation
-
-Documentation is consolidated under doc/components, doc/component_template and doc/schemas. The component generator, tests, Skill links and App schema references use the new paths. The independent reviewer found no remaining introduced migration defects. Web implementation is explicitly external and currently absent; ark_web starts as an empty private repository.
-
-Wi-Fi and device passwords in the network DTS are replaced with CHANGE_ME placeholders, and its generated C/H inputs are regenerated through the official generator. Existing runtime logs remain local and are excluded. Fonts, icons, JSON schemas, hand-maintained PyInstaller spec, vendor libraries and licenses remain tracked. The existing SDK LICENSE.txt and third-party licenses are preserved; public hosting does not change their terms.
+验证汇总：29 项 Rust 测试、4 项前端单元测试、11 项界面测试通过；8 个 SDK 技能格式和文档链接检查通过。

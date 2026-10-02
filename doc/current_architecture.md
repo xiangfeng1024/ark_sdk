@@ -14,32 +14,17 @@ App业务任务
 
 ## Studio
 
-```text
-PySide6 QMainWindow
-  -> BrainClient / QProcess
-    -> python -m studio --brain-worker
-      -> UTF-8 JSONL协议2
-        -> workspace / registry / SDK check / tasks / serial / artifacts
-          -> import studio.tooling
-```
+React 界面 → Rust/Tauri 宿主 → 显式参数工具集 → 隐藏的 Keil/OpenOCD/GCC 进程。
 
-Studio源码、Brain、工具清单和Python工具均位于`studio/`。工具执行通过import调用；Keil、OpenOCD和DTC等外部程序统一隐藏控制台。任务和串口共享资源锁，任务成功必须经过产物或日志后置校验。
+Studio 源码在独立私有仓库。SDK、App、工程、Target 和 Keil 分别选择，由 Studio 保存本机组合；工具不读取这些本机状态。DTS 生成不需要工程，编译不需要 SDK/App。同步只修改所选 Target，打包只修改暂存副本。
 
-## 目录
-
-```text
-app/                 App、DTS和生成OF文件
-component/           独立组件及组件类核心
-hal/                 HAL抽象和平台适配
-doc/                 总览、组件指南、代码模板和SDK配置Schema
-studio/              PySide6、Brain、Python工具、清单、测试和EXE输出
-```
+SDK 目录包括 app、component、hal、doc、camera、skills。旧 Python Studio 已移出正式源码；相机应用脚本继续保留。详见 [工具说明](studio_tooling.md)。
 
 ## 常用验证
 
 ```powershell
-python -m studio.cli dts app/c8t6_microcar_soil --check
-python -m studio.cli configure app/c8t6_microcar_soil/c8t6_microcar_soil.dts --dry-run
-python -m pytest studio/tests -q
-python -m studio --check --workspace .
+../ark_stdio_rust/ark-studio-cli.exe dts.check --input doc/examples/dts-参数.json
+../ark_stdio_rust/ark-studio-cli.exe --list  # 在工具参数界面填写目标，CLI 使用对应工具 ID 与 JSON 参数
+cargo test --manifest-path ../ark_stdio_rust/tools/sdk/Cargo.toml
+../ark_stdio_rust/Ark Studio.exe
 ```

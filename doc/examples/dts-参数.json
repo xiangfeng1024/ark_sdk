@@ -1,0 +1,5 @@
+{
+  "sdk": ".",
+  "app_dts": "app/c8t6_ark_net/c8t6_ark_net.dts",
+  "output_dir": "app/c8t6_ark_net"
+}
